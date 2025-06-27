@@ -1,6 +1,6 @@
 # スキル-E (Skill-E)
 
-![Licença: MIT](https://img.shields.io/badge/license-MIT-blue.svg) ![Status do Projeto](https://img.shields.io/badge/status-em%20desenvolvimento-green.svg) ![React](https://img.shields.io/badge/frontend-React-61DAFB?logo=react) ![Node.js](https://img.shields.io/badge/backend-Node.js-339933?logo=nodedotjs) ![Unity](https://img.shields.io/badge/engine-Unity-black?logo=unity)
+![Licença: MIT](https://img.shields.io/badge/license-MIT-blue.svg) ![Status do Projeto](https://img.shields.io/badge/status-em%20desenvolvimento-green.svg) ![Vue.js](https://img.shields.io/badge/frontend-Vue.js-4FC08D?logo=vuedotjs) ![Spring](https://img.shields.io/badge/backend-Spring-6DB33F?logo=spring) ![Unity](https://img.shields.io/badge/engine-Unity-black?logo=unity)
 
 Uma plataforma inovadora para a criação visual e dinâmica de cenários de simulação para Realidade Virtual (VR).
 
@@ -34,26 +34,25 @@ O Skill-E utiliza uma arquitetura de microsserviços desacoplada, garantindo esc
 ```mermaid
 graph TD
     subgraph Plataforma Web
-        A[👨‍💻 Usuário <br>(Instrutor/Designer)] --> B{Editor 3D - Frontend <br>(React / Three.js)};
-        B <--> C{API Backend <br>(Node.js)};
-        C <--> D[(Banco de Dados <br>(PostgreSQL))];
+        A["👨‍💻 Usuário <br>(Instrutor/Designer)"] --> B{"Editor 3D - Frontend <br>(React / Three.js)"};
+        B <--> C{"API Backend <br>(Node.js)"};
+        C <--> D[("Banco de Dados <br>(PostgreSQL)")];
     end
 
     subgraph Ecossistema de Automação
-        C -- Webhook --> G((🤖 n8n));
-        G -- Notifica --> H((💬 Slack/Discord));
-        G -- Faz Backup --> I[(☁️ Google Drive/S3)];
-        J -- Envia Resultados --> G;
+        C -- Webhook --> G(("🤖 n8n"));
+        G -- Notifica --> H(("💬 Slack/Discord"));
+        G -- Faz Backup --> I[("☁️ Google Drive/S3")];
+        J[Resultados da Simulação] -- Envia --> G;
     end
     
     subgraph Aplicação Final
-        F[🕶️ Simulação VR <br>(Unity)]
+        F["🕶️ Simulação VR <br>(Unity)"]
     end
 
-    C -- Gera --> E[📄 Arquivo JSON];
+    C -- Gera --> E["📄 Arquivo JSON"];
     F -- Carrega --> E;
-    F --> J;
-
+    F -- Gera --> J;
 ```
 1.  **Plataforma Web:** O usuário interage com o editor visual (Frontend), que se comunica com a API (Backend) para persistir os dados no Banco de Dados.
 2.  **Geração de Dados:** A API gera um arquivo JSON que descreve o cenário completo.
