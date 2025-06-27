@@ -1,0 +1,22 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+:root{
+    --primary-color: #7d1479;
+    --secondary-color: #9747ff;
+    --text-color: #fff;
+    --text-color2: #000;
+    --bg-color: #111;
+    --bg-color2: #222;
+    --bg-color3: #333;
+    --bg-color4: #444;
+    --bg-color5: #555;
+}
+
+body{
+    background-color: var(--primary-color);
+}
