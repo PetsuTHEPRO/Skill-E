@@ -34,8 +34,8 @@ O Skill-E utiliza uma arquitetura de microsserviços desacoplada, garantindo esc
 ```mermaid
 graph TD
     subgraph Plataforma Web
-        A["👨‍💻 Usuário <br>(Instrutor/Designer)"] --> B{"Editor 3D - Frontend <br>(React / Three.js)"};
-        B <--> C{"API Backend <br>(Node.js)"};
+        A["👨‍💻 Usuário <br>(Instrutor/Designer)"] --> B{"Editor 3D - Frontend <br>(Vue.js / Three.js)"};
+        B <--> C{"API Backend <br>(Spring)"};
         C <--> D[("Banco de Dados <br>(PostgreSQL)")];
     end
 
@@ -63,11 +63,11 @@ graph TD
 
 | Componente | Tecnologias Chave |
 | :--- | :--- |
-| **Frontend** | React, Vite, Three.js, React Three Fiber, Zustand, TypeScript, TailwindCSS |
-| **Backend** | Node.js, NestJS, TypeScript, Prisma, PostgreSQL, JWT |
+| **Frontend** | Vuejs, Vite, Three.js |
+| **Backend** | Spring Boot, PostgreSQL, JWT |
 | **Simulação** | Unity 2022.3+, C#, OpenXR, URP, Newtonsoft.Json |
 | **Automação** | n8n (self-hosted via Docker) |
-| **DevOps** | Docker, Git, GitHub Actions |
+| **DevOps** | Docker, Git |
 
 ## 🚀 Como Começar
 
@@ -75,7 +75,8 @@ Siga os passos para configurar o ambiente de desenvolvimento local.
 
 ### Pré-requisitos
 
-* Node.js (v18+)
+* Spring Boot
+* Vuejs
 * Docker e Docker Compose
 * Unity Hub e Unity Editor (2022.3.x LTS)
 
