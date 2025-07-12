@@ -4,6 +4,7 @@ import NavBar from "@/components/NavBar.vue";
 
 <template>
   <main class="landing-page">
+    <NavBar />
     <section class="hero-section">
       <div class="container hero-layout">
         <div class="hero-text">

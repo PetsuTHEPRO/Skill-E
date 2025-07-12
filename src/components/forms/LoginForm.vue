@@ -3,20 +3,20 @@
     class="d-flex align-items-center justify-content-center p-3 text-center card-login"
   >
     <div class="mw-md w-100">
-      <h2 class="fs-5 font-bold">
-        Faça login para continuar sua jornada de aprendizado
+      <h2 class="fs-5 font-bold title-login">
+        Acesse sua conta para gerenciar seus projetos
       </h2>
       <form @submit.prevent="entrar">
         <div class="mt-4">
           <div class="mb-3">
             <label for="email" class="d-block fw-medium fs-sm text-white"
-              >Insira seu e-mail</label
+              >Insira seu e-mail de trabalho</label
             >
             <div class="mt-1">
               <input
                 id="email"
                 v-model="user.email"
-                placeholder="E-mail"
+                placeholder="E-mail corporativo"
                 type="email"
                 required
                 class="form-control px-3 py-2 border-2 rounded shadow-sm text-white bg-dark"
@@ -25,7 +25,7 @@
           </div>
           <div class="mb-3">
             <label for="password" class="d-block text-white fw-medium fs-sm"
-              >Insira sua senha</label
+              >Insira sua senha de acesso</label
             >
             <div class="mt-1">
               <input
@@ -43,35 +43,30 @@
         <div class="d-flex align-items-center justify-content-between mt-3">
           <div class="d-flex align-items-center border rounded p-2">
             <label for="remember-me" class="mx-2 text-sm text-white"
-              >Salvar senha</label
+              >Lembrar-me</label
             >
             <input id="remember-me" v-model="rememberMe" type="checkbox" />
           </div>
           <div class="text-sm">
             <router-link
               to="#"
-              class="font-medium text-purple text-decoration-none fw-bolder"
-              >Esqueceu sua senha?</router-link
+              class="font-medium text-warning text-decoration-none fw-bolder"
+              >Esqueceu a senha?</router-link
             >
           </div>
         </div>
         <div class="d-flex align-items-center justify-content-center mt-4 mb-4">
           <button
             type="submit"
-            class="btn btn-primary w-100 px-4 py-2 mt-3 text-sm font-medium text-white rounded shadow-sm"
+            class="btn btn-warning w-100 px-4 py-2 mt-3 text-sm font-medium text-dark fw-bold rounded shadow-sm"
             :disabled="isDisabled"
           >
             <span v-if="isLoading">
               <i class="spinner-border spinner-border-sm" role="status"></i>
-              Enviando...
+              ACESSANDO...
             </span>
-            <span v-else> ENTRAR </span>
+            <span v-else> ENTRAR NA OBRA </span>
           </button>
-        </div>
-        <div class="d-flex align-items-center">
-          <hr class="flex-grow-1 border border-white" />
-          <div class="text-white mx-4">Outras opções de login</div>
-          <hr class="flex-grow-1 border border-light" />
         </div>
       </form>
     </div>
@@ -98,54 +93,49 @@ export default {
   methods: {
     ...mapActions(["login"]),
     entrar() {
-
-      if(this.isDisabled || this.isLoading) {
-        console.log("Entrando...");
-      }else{
+      if (this.isDisabled || this.isLoading) {
+        return; // Evita múltiplas submissões
+      }
       this.isLoading = true;
       this.isDisabled = true;
 
-      console.log(this.isLoading);
-      console.log(this.isDisabled);
       // Make a request to the backend API to verify the login credentials
       axios
         .loginUser(this.user)
         .then((response) => {
-          console.log(response.data);
           // Handle successful login response
-          const { token, email, role, telephone, especialidade, name, id } = response.data;
+          const { token, email, role, telephone, especialidade, name, id } =
+            response.data;
 
           this.login({
-            token: token,
-            email: email,
+            token,
+            email,
             especialidade: telephone,
             telefone: especialidade,
-            role: role,
-            name: name,
-            id: id,
+            role,
+            name,
+            id,
           });
-          notificationService.success("Bem vindo!");
+
+          notificationService.success("Acesso liberado. Bem-vindo à obra!");
           this.$router.push({
-            name: role,
+            name: role, // Redireciona para a página de acordo com a função do usuário
           });
-          this.isLoading = false;
-          this.isDisabled = false;
         })
         .catch((error) => {
           // Handle login error response
-          if (error) {
-            // O servidor respondeu com um status fora do intervalo 2xx
+          if (error.response && error.response.data) {
             notificationService.error(error.response.data);
-            console.log(error);
-            this.isLoading = false;
-            this.isDisabled = false;
           } else {
             notificationService.error(
-              "Servidor Offline, entre em contato a equipe técnica!"
+              "Servidor indisponível. Contate o suporte técnico."
             );
           }
+        })
+        .finally(() => {
+          this.isLoading = false;
+          this.isDisabled = false;
         });
-      }
     },
   },
 };
@@ -153,20 +143,26 @@ export default {
 
 <style>
 .card-login {
-  border: 2px solid;
-  border-image: linear-gradient(
-      to right,
-      rgba(255, 0, 0, 1) 0%,
-      rgba(255, 165, 0, 1) 20%,
-      rgba(255, 255, 0, 1) 40%,
-      rgba(0, 128, 0, 1) 60%,
-      rgba(0, 0, 255, 1) 80%,
-      rgba(75, 0, 130, 1) 100%
-    )
-    1;
-  border-radius: 25px;
-  background-color: #000;
+  border: 4px solid;
+  border-image: linear-gradient(to right, #FFD700, #FFA500, #363636, #A9A9A9) 1;
+  border-radius: 10px;
+  background-color: #1C1C1C; /* Um cinza mais escuro */
   max-width: 500px;
   width: 100%;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+.text-warning {
+    color: #FFCA2C !important; /* Dourado/Amarelo para links */
+}
+
+.btn-warning {
+    background-color: #E66A00;
+    border-color: #E66A00;
+}
+
+.title-login{
+  color: white;
+  font-weight: bold;
 }
 </style>
