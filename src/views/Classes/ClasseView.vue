@@ -1,5 +1,5 @@
 <script setup>
-import ClassroomDetails from "@/components/classroom/ClassroomDetails.vue";
+import ClassroomDetails from "@/views/SimulationController.vue";
 import MenuBar from "@/components/MenuBar.vue";
 import SideBar from "@/components/SideBar.vue";
 </script>

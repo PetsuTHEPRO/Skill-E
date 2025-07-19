@@ -11,12 +11,17 @@ const store = createStore({
     telefone: StorageService.getPhone() || '',
     name: Cookies.getName() || '',
     id: Cookies.getId() || '',
-    isSidebarOpen: false,
+    isSidebarOpen: JSON.parse(localStorage.getItem('sidebarOpen') || 'true'), 
   },
   mutations: {
 
     OPEN_MENU(state) {
       state.isSidebarOpen = true;
+    },
+    TOGGLE_SIDEBAR(state) {
+      state.isSidebarOpen = !state.isSidebarOpen;
+      // Opcional: Salva a preferência do usuário no localStorage
+      localStorage.setItem('sidebarOpen', state.isSidebarOpen);
     },
     setAuthToken(state, token) {
       state.authToken = token

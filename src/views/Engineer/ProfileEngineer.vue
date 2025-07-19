@@ -5,12 +5,12 @@ import SideBar from "@/components/SideBar.vue";
 </script>
 
 <template>
-  <div class="ontainer-fluid d-flex educator-profile-view p-0" :class="theme">
+  <div class="container-fluid d-flex engineer-profile-view p-0" :class="theme">
     <SideBar />
     <div class="container-fluid margin-mobile p-0">
     <MenuBar role="Professor" />
     <header class="d-flex align-items-center justify-content-between"></header>
-    <div class="educator-profile-form">
+    <div class="engineer-profile-form">
       <ProfileForm />
     </div>
   </div>
@@ -31,7 +31,7 @@ export default {
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap");
 
-.educator-profile-view {
+.engineer-profile-view {
   min-height: 100vh;
 }
 
@@ -46,12 +46,12 @@ export default {
   color: #F5F5F7;
 }
 
-.educator-profile-form {
+.engineer-profile-form {
   padding: 0 15rem !important;
 }
 
 @media (max-width: 768px) {
-  .educator-profile-form {
+  .engineer-profile-form {
     padding: 0 2rem !important;
   }
 }

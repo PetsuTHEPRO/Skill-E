@@ -31,9 +31,9 @@ export default {
     });
   },
 
-  findIdEducatorByEducatorEmail(email) {
+  findIdEngineerByEngineerEmail(email) {
     const token = CookiesService.getToken();
-    return apiClient.get("/educator/idByEmail", {
+    return apiClient.get("/engineer/idByEmail", {
       params: { email: email },
       headers: {
         Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho de autorização
@@ -130,7 +130,7 @@ export default {
         name: classroomData.name,
         description: classroomData.description,
         price: classroomData.price,
-        idEducator: classroomData.idEducator,
+        idEngineer: classroomData.idEngineer,
       },
       { headers: { Authorization: `Bearer ${token}` } }
     );

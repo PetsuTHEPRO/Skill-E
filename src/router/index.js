@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import store from "../store/index.js";
-import NotFound from '../views/NotFound.vue'; 
+import NotFound from "../views/NotFound.vue";
 import axiosService from "@/api/axios";
+import SimulationController from '../views/SimulationController.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,39 +47,39 @@ const router = createRouter({
       },
     },
     {
-      path: "/educator",
-      name: "educator",
+      path: "/engineer",
+      name: "engineer",
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import("../views/Educator/EducatorView.vue"),
+      component: () => import("../views/Engineer/EngineerView.vue"),
       meta: {
         requiresAuth: true,
-        role: "educator",
+        role: "engineer",
       },
     },
     {
-      path: "/educator/createClassroom",
+      path: "/engineer/createClassroom",
       name: "createClassroom",
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import("../views/Educator/CreateClassroom.vue"),
+      component: () => import("../views/Engineer/CreateClassroom.vue"),
       meta: {
         requiresAuth: true,
-        role: "educator",
+        role: "engineer",
       },
     },
     {
-      path: "/educator/profile",
-      name: "educatorProfile",
+      path: "/engineer/profile",
+      name: "engineerProfile",
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import("../views/Educator/ProfileEducator.vue"),
+      component: () => import("../views/Engineer/ProfileEngineer.vue"),
       meta: {
         requiresAuth: true,
-        role: "educator",
+        role: "engineer",
       },
     },
     {
@@ -94,15 +95,15 @@ const router = createRouter({
       },
     },
     {
-      path: "/educator/classes",
-      name: "educatorClasses",
+      path: "/engineer/classes",
+      name: "engineerClasses",
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import("@/views/ClassesView.vue"),
       meta: {
         requiresAuth: true,
-        role: "educator",
+        role: "engineer",
       },
     },
     {
@@ -130,7 +131,7 @@ const router = createRouter({
       },
     },
     {
-      path: "/educator/support",
+      path: "/engineer/support",
       name: "support",
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
@@ -138,7 +139,7 @@ const router = createRouter({
       component: () => import("@/views/SupportView.vue"),
       meta: {
         requiresAuth: true,
-        role: "educator",
+        role: "engineer",
       },
     },
     {
@@ -154,15 +155,15 @@ const router = createRouter({
       },
     },
     {
-      path: "/educator/classroom/:id",
-      name: "educatorClassroom",
+      path: "/engineer/classroom/:id",
+      name: "engineerClassroom",
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import("../views/Classes/ClasseView.vue"),
       meta: {
         requiresAuth: true,
-        role: "educator",
+        role: "engineer",
       },
     },
 
@@ -179,9 +180,14 @@ const router = createRouter({
       },
     },
     {
-      path: '/:pathMatch(.*)*',
-      name: 'not-found',
-      component: NotFound
+      path: "/simulador", // O endereço que você vai acessar no navegador
+      name: "Simulador",
+      component: SimulationController, // O componente que será renderizado
+    },
+    {
+      path: "/:pathMatch(.*)*",
+      name: "not-found",
+      component: NotFound,
     },
   ],
 });
@@ -192,13 +198,12 @@ router.beforeEach((to, from, next) => {
       next({ name: "login" });
     } else if (to.meta.role && to.meta.role !== store.getters.userRole) {
       switch (userRole) {
-
         case "student":
           next({ name: "student" });
           break;
 
-        case "educator":
-          next({ name: "educator" });
+        case "engineer":
+          next({ name: "engineer" });
           break;
 
         case "admin":
@@ -219,14 +224,14 @@ router.beforeEach((to, from, next) => {
 
 // Adicione uma rota de redirecionamento padrão para usuários autenticados
 router.beforeEach((to, from, next) => {
-  if (to.name === 'login' && store.getters.isAuthenticated) {
+  if (to.name === "login" && store.getters.isAuthenticated) {
     const userRole = store.getters.userRole;
-    if (userRole === 'admin') {
-      next({ name: 'admin' });
-    } else if (userRole === 'student') {
-      next({ name: 'student' });
-    } else if (userRole === 'educator') {
-      next({ name: 'educator' });
+    if (userRole === "admin") {
+      next({ name: "admin" });
+    } else if (userRole === "student") {
+      next({ name: "student" });
+    } else if (userRole === "engineer") {
+      next({ name: "engineer" });
     } else {
       next();
     }
@@ -236,8 +241,8 @@ router.beforeEach((to, from, next) => {
 });
 
 router.beforeEach(async (to, from, next) => {
-  // Verifica se a rota começa com /student/ ou /educator/
-  if (to.path.startsWith('/student') || to.path.startsWith('/educator')) {
+  // Verifica se a rota começa com /student/ ou /engineer/
+  if (to.path.startsWith("/student") || to.path.startsWith("/engineer")) {
     try {
       // Faz uma requisição ao backend para validar o token
       const response = await axiosService.validateToken();

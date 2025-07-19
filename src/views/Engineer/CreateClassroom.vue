@@ -4,7 +4,7 @@ import SideBar from "@/components/SideBar.vue";
 </script>
 
 <template>
-  <div class="container-fluid d-flex educator-create-view p-0" :class="theme">
+  <div class="container-fluid d-flex engineer-create-view p-0" :class="theme">
     <SideBar />
     <div class="container-fluid p-0">
     <MenuBar role="Professor" />
@@ -65,16 +65,16 @@ export default {
         name: "",
         description: "",
         price: 0.0,
-        idEducator: 0,
+        idEngineer: 0,
         theme: Cookies.getTheme(),
       },
     };
   },
   mounted() {
     axios
-      .findIdEducatorByEducatorEmail(Cookies.getEmail())
+      .findIdEngineerByEngineerEmail(Cookies.getEmail())
       .then((response) => {
-        this.classroom.idEducator = response.data;
+        this.classroom.idEngineer = response.data;
       })
       .catch((error) => {
         console.log(error);
@@ -87,7 +87,7 @@ export default {
         .then(() => {
           // Handle successful login response
           notificationService.success("Turma criada com sucesso!");
-          this.$router.push({ name: "educator" });
+          this.$router.push({ name: "engineer" });
         })
         .catch((error) => {
           if (error.response) {
@@ -107,7 +107,7 @@ export default {
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap");
 
-.educator-create-view {
+.engineer-create-view {
   background-color: #121214 !important;
   color: white;
   min-height: 100vh;

@@ -4,35 +4,26 @@ import SearchBar from "@/components/SearchBar.vue";
 </script>
 
 <template>
-  <header
-    class="d-flex align-items-center justify-content-between bg-black px-4 py-2 border-bottom border-top border-2 border-purple"
-  >
+  <header class="construction-header">
     <div class="d-flex align-items-center">
       <SidebarMobile />
-      <span class="d-none d-lg-block h4 fw-bold mb-0 text-white">Institucional</span>
-      <div
-        class="d-none d-lg-block ms-3 px-3 py-1 rounded-pill bg-success text-white text-xs fw-medium"
-      >
-        {{ role }}
-      </div>
+      <span class="d-none d-lg-block h4 fw-bold mb-0 header-title">Simulações</span>
     </div>
 
     <div class="d-flex align-items-center">
       <SearchBar :role="role"/>
-      <span class="d-none d-lg-block bg-warning text-black px-2 py-1 rounded-pill">
-        R$ {{ saldo }}
-      </span>
       <button
-        class="rounded-circle mx-4 text-white notificati"
+        class="theme-toggle-btn mx-4"
         :class="[themeClass]"
         @click="toggleTheme()"
+        aria-label="Alternar tema"
       ></button>
-      <button class="btn btn-outline-light rounded-circle p-0">
+      <button class="profile-btn">
         <img
           width="40"
           height="40"
-          style="background-color: white; border-radius: 50%"
-          :src="`https://robohash.org/${name}`"
+          :src="`https://robohash.org/${name}.png?set=set4`"
+          alt="Foto de perfil"
         />
         <span class="visually-hidden">Profile</span>
       </button>
@@ -43,7 +34,6 @@ import SearchBar from "@/components/SearchBar.vue";
 <script>
 import CookiesService from "@/service/CookiesService";
 import store from "@/store/index.js";
-import axiosService from "@/api/axios.js";
 
 export default {
   name: "MenuBar",
@@ -52,7 +42,6 @@ export default {
   },
   data() {
     return {
-      saldo: 0,
       name: CookiesService.getName(),
       search: "",
       themeClass: CookiesService.getTheme() === 'dark-theme' ? 'bi bi-moon' : 'bi bi-sun',
@@ -61,7 +50,6 @@ export default {
   methods: {
     openMenu() {
       store.state.isSidebarOpen = !store.state.isSidebarOpen;
-      console.log(store.state.isSidebarOpen);
     },
     toggleTheme() {
       CookiesService.toggleTheme();
@@ -71,58 +59,74 @@ export default {
 };
 </script>
 
-<style>
-.menu-bar {
-  max-width: 100vw;
+<style scoped>
+/* Importa a fonte principal do tema */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Define as variáveis de cor para referência, baseadas no seu pedido */
+:root {
+  --background-color: #F4F7F5;
+  --primary-color: #FF7A00;
+  --primary-hover-color: #E66A00;
+  --border-color: #DDE2DF;
+  --text-primary: #1E1E1E;
 }
 
-.border-purple {
-  border-color: #7d1479 !important;
+.construction-header {
+  /* Estilo principal da barra */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--background-color);
+  border-bottom: 2px solid var(--border-color);
+  font-family: "Inter", sans-serif;
 }
 
-.bg-preto {
-  background-color: #000 !important;
+.header-title {
+  color: var(--text-primary);
 }
 
-.bg-preto::placeholder {
-  color: white;
-}
-
-.no-focus:focus {
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-.text-white {
-  color: white !important;
-}
-
-input[text] {
-  border-radius: 25px !important;
-}
-
-.notificati {
-  padding: 6px 9px;
+.theme-toggle-btn {
+  /* Botão de alternar tema */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: none;
-  background-color: #7d1479;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: #FFFFFF;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
 }
 
-/* Custom Switch Styles */
-.form-check-input:checked {
-  background-color: #0d6efd; /* Cor de fundo quando ativado */
-  border-color: #0d6efd; /* Cor da borda quando ativado */
+.theme-toggle-btn:hover {
+  background-color: var(--primary-hover-color);
 }
 
-.form-check-input:focus {
-  box-shadow: none; /* Remove o foco padrão */
+.profile-btn {
+  /* Botão de perfil */
+  padding: 0;
+  border: 2px solid var(--border-color);
+  background-color: transparent;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease-in-out;
 }
 
-.form-check-input:checked:focus {
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Adiciona sombra personalizada quando ativado */
+.profile-btn:hover {
+  border-color: var(--primary-color);
 }
 
-/* Custom Label Styles */
-.form-check-label {
-  margin-left: 10px; /* Espaçamento entre o switch e o texto */
+.profile-btn img {
+  border-radius: 50%;
 }
 </style>

@@ -110,8 +110,8 @@ export default {
           this.login({
             token,
             email,
-            especialidade: telephone,
-            telefone: especialidade,
+            especialidade: especialidade,
+            telefone: telephone,
             role,
             name,
             id,
@@ -123,6 +123,7 @@ export default {
           });
         })
         .catch((error) => {
+          console.log(error)
           // Handle login error response
           if (error.response && error.response.data) {
             notificationService.error(error.response.data);
