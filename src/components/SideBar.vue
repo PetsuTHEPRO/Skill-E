@@ -9,7 +9,7 @@
 
     <ul class="nav flex-column p-2 flex-grow-1">
       <li class="nav-item" v-for="item in menuItems" :key="item.text">
-        <router-link :to="`/${role}/${item.rota}`" active-class="active-link" class="nav-link d-flex align-items-center">
+        <router-link :to="`/${item.rota}`" active-class="active-link" class="nav-link d-flex align-items-center">
           <i :class="item.icon" class="nav-icon"></i>
           <span v-show="isOpen" class="ms-3">{{ item.text }}</span>
         </router-link>

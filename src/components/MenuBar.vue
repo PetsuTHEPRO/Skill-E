@@ -13,7 +13,6 @@ import SearchBar from "@/components/SearchBar.vue";
     </div>
 
     <div class="d-flex align-items-center">
-      <SearchBar :role="role" />
       <button
         class="theme-toggle-btn mx-4"
         :class="[themeClass]"

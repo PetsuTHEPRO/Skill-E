@@ -3,7 +3,7 @@ import HomeView from "../views/HomeView.vue";
 import store from "../store/index.js";
 import NotFound from "../views/NotFound.vue";
 import axiosService from "@/api/axios";
-import SimulationController from '../views/SimulationController.vue';
+import SimulationController from '@/views/SimulationManagerView.vue';
 
 const routes = [
   // --- Rotas Públicas ---
@@ -23,8 +23,8 @@ const routes = [
     component: () => import("../views/RegisterView.vue"),
   },
   {
-    path: "/simulador", // Rota para o seu controlador de simulação existente
-    name: "simulador",
+    path: "/simulation/manager/", // Rota para o seu controlador de simulação existente
+    name: "simulation-manager",
     component: SimulationController,
   },
 
