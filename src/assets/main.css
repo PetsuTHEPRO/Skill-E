@@ -34,6 +34,32 @@ html {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
+
+.light-theme {
+  --background-color: #F4F7F5;   /* Cinza Claro (Fundo) */
+  --background-deep-color: #DDE2DF;
+  --surface-color: #FFFFFF;      /* Branco (Cards e superfícies) */
+  --primary-color: #FF7A00;      /* Laranja Industrial (Botões e CTAs) */
+  --primary-hover-color: #E66A00;/* Laranja mais escuro para hover */
+  --border-color: #DDE2DF;       /* Borda sutil para formulários */
+  --text-primary: #1E1E1E;       /* Cinza Escuro (Texto principal) */
+  --text-secondary: #6C757D;    /* Cinza médio para textos secundários */
+  --font-main: "Inter", sans-serif;
+}
+
+/* Paleta Dark Mode */
+.dark-theme {
+  --background-color: #121212;      /* Cinza Quase Preto (Fundo Principal) */
+  --background-deep-color: #1E1E1E; /* Cinza Escuro para elementos secundários */
+  --surface-color: #1E1E1E;         /* Cinza Escuro (Cards e superfícies) */
+  --primary-color: #FF7A00;         /* Laranja Industrial (Mantido para identidade) */
+  --primary-hover-color: #FF8C20;   /* Laranja um pouco mais claro para hover "brilhante" */
+  --border-color: #2D2D2D;          /* Borda escura sutil */
+  --text-primary: #F4F7F5;          /* Cinza Muito Claro (Texto principal, invertido do fundo light) */
+  --text-secondary: #A0A0A0;       /* Cinza médio-claro para textos secundários */
+  --font-main: "Inter", sans-serif; /* A fonte não precisa mudar */
+}
+
 /*
 :root{
     --primary-color: #7d1479;

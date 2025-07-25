@@ -7,11 +7,13 @@ import SearchBar from "@/components/SearchBar.vue";
   <header class="construction-header">
     <div class="d-flex align-items-center">
       <SidebarMobile />
-      <span class="d-none d-lg-block h4 fw-bold mb-0 header-title">Simulações</span>
+      <span class="d-none d-lg-block h4 fw-bold mb-0 header-title"
+        >Simulações</span
+      >
     </div>
 
     <div class="d-flex align-items-center">
-      <SearchBar :role="role"/>
+      <SearchBar :role="role" />
       <button
         class="theme-toggle-btn mx-4"
         :class="[themeClass]"
@@ -33,6 +35,7 @@ import SearchBar from "@/components/SearchBar.vue";
 
 <script>
 import CookiesService from "@/service/CookiesService";
+import storage from "@/service/storage";
 import store from "@/store/index.js";
 
 export default {
@@ -44,7 +47,8 @@ export default {
     return {
       name: CookiesService.getName(),
       search: "",
-      themeClass: CookiesService.getTheme() === 'dark-theme' ? 'bi bi-moon' : 'bi bi-sun',
+      themeClass:
+        storage.getTheme() === "dark-theme" ? "bi bi-moon" : "bi bi-sun",
     };
   },
   methods: {
@@ -52,8 +56,10 @@ export default {
       store.state.isSidebarOpen = !store.state.isSidebarOpen;
     },
     toggleTheme() {
-      CookiesService.toggleTheme();
-      window.location.reload();
+      storage.toggleTheme() // Atualiza o Storage
+      const currentTheme = storage.getTheme()
+      this.themeClass = currentTheme === "dark-theme" ? "bi bi-moon" : "bi bi-sun"
+
     },
   },
 };
@@ -61,15 +67,15 @@ export default {
 
 <style scoped>
 /* Importa a fonte principal do tema */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 /* Define as variáveis de cor para referência, baseadas no seu pedido */
 :root {
-  --background-color: #F4F7F5;
-  --primary-color: #FF7A00;
-  --primary-hover-color: #E66A00;
-  --border-color: #DDE2DF;
-  --text-primary: #1E1E1E;
+  --background-color: #f4f7f5;
+  --primary-color: #ff7a00;
+  --primary-hover-color: #e66a00;
+  --border-color: #dde2df;
+  --text-primary: #1e1e1e;
 }
 
 .construction-header {
@@ -98,7 +104,7 @@ export default {
   border: none;
   border-radius: 50%;
   background-color: var(--primary-color);
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: 1.2rem;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;

@@ -178,18 +178,6 @@ import NavBar from "@/components/NavBar.vue";
 </template>
 
 <style>
-/* Estilos Globais */
-:root {
-  --background-color: #F4F7F5;   /* Cinza Claro (Fundo) */
-  --background-deep-color: #DDE2DF;
-  --surface-color: #FFFFFF;      /* Branco (Cards e superfícies) */
-  --primary-color: #FF7A00;      /* Laranja Industrial (Botões e CTAs) */
-  --primary-hover-color: #E66A00;/* Laranja mais escuro para hover */
-  --border-color: #DDE2DF;       /* Borda sutil para formulários */
-  --text-primary: #1E1E1E;       /* Cinza Escuro (Texto principal) */
-  --text-secondary: #6C757D;    /* Cinza médio para textos secundários */
-  --font-main: "Inter", sans-serif;
-}
 
 .landing-page {
   background-color: var(--background-color);

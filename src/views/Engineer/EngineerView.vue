@@ -6,7 +6,7 @@ import BarChart from "@/components/BarChart.vue";
 </script>
 
 <template>
-  <div class="container-fluid d-flex dashboard-view p-0">
+  <div class="container-fluid d-flex dashboard-view p-0" :class="theme">
     <SideBar />
     <div class="container-fluid content-wrapper p-0">
       <MenuBar role="Professor" />
@@ -77,8 +77,8 @@ import BarChart from "@/components/BarChart.vue";
 </template>
 
 <script>
-import axios from "@/api/axios.js";
-import { utils, writeFile } from "xlsx"; // Importação para o Excel
+import { utils, writeFile } from "xlsx";
+import storage from "@/service/storage";
 
 export default {
   data() {
@@ -98,8 +98,18 @@ export default {
           data: [],
         }],
       },
-      activityLog: [],
+      activityLog: []
     };
+  },
+  computed: {
+    theme() {
+      // Este 'theme' agora é uma propriedade computada.
+      // Ele está "assistindo" a variável 'theme' que importamos do store.
+      // Sempre que o valor no store mudar, esta propriedade será recalculada
+      // e a tela será atualizada AUTOMATICAMENTE.
+      console.log(storage.getTheme())
+      return storage.getTheme()
+    }
   },
   mounted() {
     // AQUI VOCÊ DEVE CHAMAR SUA API PARA OBTER OS DADOS REAIS

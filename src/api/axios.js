@@ -2,219 +2,131 @@ import axios from "axios";
 import CookiesService from "@/service/CookiesService.js";
 
 const apiUrl = import.meta.env.VITE_API_URL;
-const apiClient = axios.create({
+
+const axiosService = axios.create({
   baseURL: apiUrl,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
+/**
+ * Interceptor para adicionar o token de autenticação em todas as requisições.
+ * Isso evita a repetição de código em cada função que precisa de autenticação.
+ */
+axiosService.interceptors.request.use(
+  (config) => {
+    const token = CookiesService.getToken();
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export default {
-  // Comando de GET - Banco de Dados
+  // --- Autenticação e Gerenciamento de Usuário ---
 
+  /**
+   * Realiza o login do usuário.
+   * @param {object} userData - { email, password }
+   */
+  loginUser(userData) {
+    return axiosService.post("/auth/login", userData);
+  },
+
+  /**
+   * Registra um novo engenheiro.
+   * @param {object} userData - { name, telephone, email, password, especialidade }
+   */
+  registerUser(userData) {
+    // O 'role' é definido como 'engineer' por padrão no backend ou aqui, se necessário.
+    const payload = { ...userData, role: 'engineer' };
+    return axiosService.post("/auth/register", payload);
+  },
+
+  /**
+   * Valida o token atual com o backend.
+   */
   validateToken() {
-    const token = CookiesService.getToken();
-    return apiClient.get("/token/validate", {
-      headers: {
-        Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho de autorização
-      },
-    });
+    return axiosService.get("/token/validate");
   },
 
-  getAllClassrooms(search, page, size) {
-    const token = CookiesService.getToken();
-    return apiClient.get("/turma/allClassroom", {
-      params: { search: search, page: page, size: size },
-      headers: {
-        Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho de autorização
-      },
-    });
+  /**
+   * Busca os dados do usuário logado.
+   * @param {string} id - ID do engenheiro.
+   */
+  getUser(id) {
+    return axiosService.get(`/engineer/atualUser`, { params: { id } });
   },
 
-  findIdEngineerByEngineerEmail(email) {
-    const token = CookiesService.getToken();
-    return apiClient.get("/engineer/idByEmail", {
-      params: { email: email },
-      headers: {
-        Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho de autorização
-      },
-    });
-  },
-
-  findClassroomsByCode(codigo) {
-    const token = CookiesService.getToken();
-    return apiClient.get("/turma", {
-      params: { codigo: codigo },
-      headers: {
-        Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho de autorização
-      },
-    });
-  },
-
-  getClassroomsHomeByCode(codigo) {
-    const token = CookiesService.getToken();
-    return apiClient.get("/turma/turmasAluno", {
-      params: { codigo: codigo }, // Parâmetro de consulta
-      headers: {
-        Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho de autorização
-      },
-    });
-  },
-
-  getClassroomsDestaque() {
-    const token = CookiesService.getToken();
-    return apiClient.get("/turma/destaque", {
-      headers: {
-        Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho de autorização
-      },
-    });
-  },
-
-  getNameTurmas(search) {
-    const token = CookiesService.getToken();
-    return apiClient.get("/turma/search", {
-      params: { search: search },
-      headers: {
-        Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho de autorização
-      },
-    });
-  },
-
-  updateUser(user, role) {
-    const token = CookiesService.getToken();
-    return apiClient.put(
-      `/${role.toLowerCase()}/updateProfile?login=${user.login}`,
+  /**
+   * Atualiza o perfil do engenheiro.
+   * @param {object} user - { login, name, telefone, especialidade }
+   */
+  updateUser(user) {
+    return axiosService.put(
+      `/engineer/updateProfile?login=${user.login}`,
       {
         name: user.name,
         telefone: user.telefone,
-        especialidade: user.especialidade
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho de autorização
-        },
+        especialidade: user.especialidade,
       }
     );
   },
 
-  loginUser(userData) {
-    return apiClient.post("/auth/login", {
-      email: userData.email,
-      password: userData.password,
-    });
+  // --- CRUD de Simulações ---
+
+  /**
+   * Busca uma lista de todas as simulações.
+   */
+  getSimulations() {
+    return axiosService.get("/simulations");
   },
 
-  // Comando DELETE - Banco de Dados
-  deleteClassroom(codigo) {
-    const token = CookiesService.getToken();
-    return apiClient.delete(`/turma/${codigo}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  /**
+   * Busca os detalhes de uma simulação específica por ID.
+   * @param {string} id - O ID da simulação.
+   */
+  getSimulationById(id) {
+    return axiosService.get(`/simulations/${id}`);
   },
 
-  // Comando POST - Banco de Dados
-
-  confirmarEntradaTurma(codigo, idAluno){
-    const token = CookiesService.getToken();    
-    return apiClient.post(`/turma/${codigo}/entrar`,
-    { idAluno: idAluno },
-    { headers: { Authorization: `Bearer ${token}` } }
-    );
+  /**
+   * Cria uma nova simulação.
+   * @param {object} simulationData - Os dados da nova simulação.
+   */
+  createSimulation(simulationData) {
+    return axiosService.post("/simulations", simulationData);
   },
 
-  createClassroom(classroomData) {
-    const token = CookiesService.getToken();
-    return apiClient.post(
-      "/turma/register",
-      {
-        name: classroomData.name,
-        description: classroomData.description,
-        price: classroomData.price,
-        idEngineer: classroomData.idEngineer,
-      },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+  /**
+   * Atualiza uma simulação existente.
+   * @param {string} id - O ID da simulação a ser atualizada.
+   * @param {object} simulationData - Os novos dados da simulação.
+   */
+  updateSimulation(id, simulationData) {
+    return axiosService.put(`/simulations/${id}`, simulationData);
   },
 
-
-  registerUser(userData) {
-    return apiClient.post("/auth/register", {
-      name: userData.name,
-      telephone: userData.telephone,
-      email: userData.email,
-      password: userData.password,
-      role: userData.role,
-      especialidade: userData.especialidade,
-    });
+  /**
+   * Exclui uma simulação.
+   * @param {string} id - O ID da simulação a ser excluída.
+   */
+  deleteSimulation(id) {
+    return axiosService.delete(`/simulations/${id}`);
   },
-
-  updateStatusTurma(classroomId, status) {
-    const token = CookiesService.getToken();
-    console.log(status);
-    return apiClient.put(
-      `/turma/${classroomId}/status`,
-      { status: status },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-  },
-
-  getUser(id, role) {
-    const token = CookiesService.getToken();
-    return apiClient.get(`/${role}/atualUser`, {
-      params: { id: id },
-      headers: {
-        Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho de autorização
-      },
-    });
-  },
-
-  getIdsAlunos(codigo) {
-    const token = CookiesService.getToken();
-    return apiClient.get(`/turma/${codigo}/students/info`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  },
-
-  getClassroomByIdOfUser(codigo, page, size, role) {
-    const token = CookiesService.getToken();
-
-    return apiClient.get(`/turma/${role}Turmas`, {
-      params: { codigo: codigo, page: page, size: size },
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  },
-
-  getClassroomById(id) {
-    const token = CookiesService.getToken();
-    return apiClient.get(`/turma/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  },
-
-  getMaterialsByClassroomCode(codigo) {
-    return apiClient.get(`/turma/${codigo}/materials`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  },
-
-  setMaterialsByClassroomCode(materials) {
-    const token = CookiesService.getToken();
-    return apiClient.post(`/material/register`, materials, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  },
-
-  deleteMaterial(classroomCodigo, materialId) {
-    const token = CookiesService.getToken();
-    return apiClient.delete(`/turma/${classroomCodigo}/material/${materialId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  },
-
-  sendEmail(support) {
-    const token = CookiesService.getToken();
-    return apiClient.post(`/support/send`, support, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  
+  // --- Outros ---
+  
+  /**
+   * Envia um e-mail de suporte.
+   * @param {object} supportData - { name, email, message }
+   */
+  sendSupportEmail(supportData) {
+    return axiosService.post(`/support/send`, supportData);
   },
 };

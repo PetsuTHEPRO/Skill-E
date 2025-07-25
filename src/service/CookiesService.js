@@ -1,4 +1,3 @@
-import { toggle } from '@nextui-org/react';
 import Cookies from 'js-cookie';
 
 // Configuração padrão dos cookies (opcional)
@@ -7,11 +6,6 @@ const cookieOptions = {
   path: '/',  // Define o caminho onde o cookie está disponível
   secure: false, // Define se o cookie está disponível apenas pelo protocolo HTTPS
 };
-
-// Definir o tema padrão se não estiver definido
-if (!Cookies.get('theme')) {
-  Cookies.set('theme', 'dark-theme', cookieOptions);
-}
 
 export default {
   // Armazenar dados no cookie
@@ -35,10 +29,6 @@ export default {
     Cookies.set('id', id, cookieOptions);
   },
 
-  setTheme(theme) {  // Adiciona o modo (dark ou light)
-    Cookies.set('theme', theme, cookieOptions);
-  },
-
   // Recuperar dados dos cookies
   getToken() {
     return Cookies.get('token');
@@ -60,19 +50,6 @@ export default {
     return Cookies.get('role');
   },
 
-  getTheme() {  // Recupera o modo (dark ou light)
-    return Cookies.get('theme');
-  },
-
-  toggleTheme() {  // Altera o modo (dark ou light
-    const theme = Cookies.get('theme');
-
-    if (theme === 'light-theme') {
-      Cookies.set('theme', 'dark-theme', cookieOptions);
-    } else {
-      Cookies.set('theme', 'light-theme', cookieOptions);
-    }
-  },
   // Remover cookies
   removeToken() {
     Cookies.remove('token', { path: '/' });
