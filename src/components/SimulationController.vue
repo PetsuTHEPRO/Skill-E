@@ -94,7 +94,6 @@ function resetParameters() {
 
 // Hook que chama a função para buscar os dados iniciais quando o componente é montado.
 onMounted(fetchSimulationConfig);
-
 </script>
 
 <template>

@@ -335,6 +335,7 @@ h1 {
   border-radius: 8px;
   font-size: 1rem;
   transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
 }
 .form-group input:focus,
 .form-group textarea:focus {
@@ -347,7 +348,6 @@ h1 {
 .form-group textarea:focus ~ .input-icon {
   color: var(--primary-color, #ff7a00);
 }
-
 .form-group-fieldset {
   border: 1px solid var(--border-color, #eaeaea);
   border-radius: 8px;
@@ -373,7 +373,6 @@ h1 {
   padding-top: 1.5rem;
   border-top: 1px solid var(--border-color, #eaeaea);
 }
-
 .error-feedback {
   background-color: #fed7d7;
   color: #c53030;
