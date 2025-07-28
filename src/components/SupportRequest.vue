@@ -1,70 +1,77 @@
 <template>
-  <div class="d-flex flex-column mx-5 mb-5">
-    <div class="card w-100 max-w-xl" :class="theme">
-      <div class="card-header d-flex flex-column">
+  <div class="support-form-container">
+    <div class="support-card" :class="theme">
+      <div class="card-header">
         <h5 class="card-title">Formulário de Suporte</h5>
-        <p class="card-text">
-          Preencha o formulário abaixo para nos ajudar.
+        <p class="card-subtitle">
+          Precisa de ajuda? Preencha os campos abaixo e nossa equipe entrará em contato.
         </p>
       </div>
       <div class="card-body">
-        <form @submit.prevent="submitSupportRequest" class="row g-3">
-          <div class="col-12">
-            <label for="email" class="form-label">Email pra Contato</label>
+        <form @submit.prevent="submitSupportRequest" class="support-form">
+          
+          <div class="form-group">
+            <i class="bi bi-envelope form-icon"></i>
             <input
               v-model="support.email"
               type="email"
-              class="form-control input-text"
+              class="form-control"
               id="email"
-              placeholder="Enter your email"
+              placeholder=" "
             />
+            <label for="email" class="form-label">Email para Contato</label>
           </div>
-          <div class="col-12">
-            <label for="phone" class="form-label">Telefone pra Contato</label>
+
+          <div class="form-group">
+            <i class="bi bi-telephone form-icon"></i>
             <input
               v-model="support.phone"
               type="tel"
-              class="form-control input-text"
+              class="form-control"
               id="phone"
-              placeholder="Enter your phone number"
+              placeholder=" "
             />
-          </div>
-          <div class="col-12">
-            <label for="reason" class="form-label">Razão da Solicitação</label>
-            <select v-model="support.razao" id="reason" class="form-select input-text">
-              <option class="option" value="" disabled selected>Select reason</option>
-              <option class="option" value="bugs">Bugs e Glitchs</option>
-              <option class="option" value="payment">Falhas no Pagamento</option>
-              <option class="option" value="suggestions">Sugestões</option>
-              <option class="option" value="access">Problemas de Acesso</option>
-              <option class="option" value="functionality">Dúvidas sobre Funcionalidades</option>
-              <option class="option" value="security">Questões de Segurança</option>
-              <option class="option" value="performance">Problemas de Desempenho</option>
-            </select>
+            <label for="phone" class="form-label">Telefone para Contato</label>
           </div>
 
-          <div class="col-12">
-            <label for="description" class="form-label">Descrição</label>
+          <div class="form-group">
+            <i class="bi bi-lightbulb form-icon"></i>
+            <select v-model="support.razao" id="reason" class="form-control">
+              <option value="" disabled>Selecione a razão do contato</option>
+              <option value="bugs">Bugs e Glitchs</option>
+              <option value="payment">Falhas no Pagamento</option>
+              <option value="suggestions">Sugestões de Melhoria</option>
+              <option value="access">Problemas de Acesso</option>
+              <option value="functionality">Dúvidas sobre Funcionalidades</option>
+              <option value="security">Questões de Segurança</option>
+              <option value="performance">Problemas de Desempenho</option>
+            </select>
+            <label for="reason" class="form-label">Razão da Solicitação</label>
+          </div>
+
+          <div class="form-group">
+            <i class="bi bi-pencil-square form-icon"></i>
             <textarea
               v-model="support.descricao"
               id="description"
-              class="form-control input-text"
+              class="form-control"
               rows="4"
-              placeholder="Provide more details about your issue or request"
+              placeholder=" "
             ></textarea>
+            <label for="description" class="form-label">Descrição Detalhada</label>
           </div>
-          <div class="d-flex justify-content-center align-items-center">
+
+          <div class="button-container">
             <button 
               type="submit" 
-              class="btn btn-solicitar" 
-              :disabled="isDisabled"
+              class="btn-submit" 
+              :disabled="isLoading"
+              :class="{ 'is-loading': isLoading, 'is-success': isSuccess }"
             >
-              <span v-if="isLoading">
-                <i class="spinner-border spinner-border-sm" role="status"></i>
-                Enviando...
-              </span>
-              <span v-else>
-                Mandar solicitação
+              <span class="btn-content">
+                <i class="bi bi-check-lg icon-success"></i>
+                <span class="spinner-border spinner-border-sm icon-loading" role="status"></span>
+                <span class="btn-text">Enviar Solicitação</span>
               </span>
             </button>
           </div>
@@ -77,7 +84,8 @@
 <script>
 import axios from "@/api/axios.js";
 import CookiesService from "@/service/CookiesService.js";
-import notificationService from '@/service/notificationService.js'
+import notificationService from '@/service/notificationService.js';
+import StorageService from "@/service/storage.js";
 
 export default {
   data() {
@@ -90,11 +98,18 @@ export default {
         descricao: ""
       },
       isLoading: false,
-      isDisabled: false,
+      isSuccess: false, // Novo estado para feedback de sucesso
     };
+  },
+  computed: {
+    theme() {
+      // Garante que o tema seja aplicado
+      return StorageService.getTheme() || 'light-theme';
+    }
   },
   methods: {
     validateForm() {
+      // Validação permanece a mesma
       if (!this.support.email) {
         notificationService.error('Preencha o campo email.');
         return false;
@@ -107,35 +122,43 @@ export default {
         notificationService.error('Selecione a razão do suporte.');
         return false;
       }
-      if (!this.support.descricao) {
-        notificationService.error('Preencha a descrição.');
+      if (!this.support.descricao || this.support.descricao.length < 10) {
+        notificationService.error('A descrição precisa ter pelo menos 10 caracteres.');
         return false;
       }
       return true;
     },
 
     submitSupportRequest() {
-      if (!this.validateForm()) {
+      if (!this.validateForm() || this.isLoading) {
         return;
       }
 
       this.isLoading = true;
-      this.isDisabled = true;
       
       axios.sendEmail(this.support)
         .then(() => {
           notificationService.success("Suporte solicitado com sucesso!");
-          this.isLoading = false;
-          this.isDisabled = false;
+          this.isSuccess = true; // Ativa o estado de sucesso
+          // Reseta o formulário
+          this.support.email = "";
+          this.support.phone = "";
+          this.support.razao = "";
+          this.support.descricao = "";
+
+          // Reseta o botão após a animação de sucesso
+          setTimeout(() => {
+            this.isLoading = false;
+            this.isSuccess = false;
+          }, 2000);
         })
         .catch((error) => {
+          this.isLoading = false; // Garante que o botão volte ao normal em caso de erro
           if (error.response) {
             notificationService.error(error.response.data);
           } else {
             notificationService.error("Servidor Offline, entre em contato com a equipe técnica!");
           }
-          this.isLoading = false;
-          this.isDisabled = false;
         });
     },
   },
@@ -143,86 +166,172 @@ export default {
 </script>
 
 <style scoped>
+/* --- ANIMAÇÃO E ESTILO GERAL --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.support-form-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem;
+  width: 100%;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.support-card {
+  width: 100%;
+  max-width: 600px;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.card-header {
+  padding: 1.5rem;
+  text-align: center;
+}
 
 .card-title {
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1.75rem;
   font-weight: 700;
+  margin-bottom: 0.5rem;
 }
 
-.dark-theme .card {
-  background-color: #121214;
-  color: #f5f5f7;
-  border: 1px solid #7d1479;
+.card-subtitle {
+  font-size: 1rem;
 }
 
-.light-theme .card {
-  background-color: #FFF;
-  color: #121214;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07), 0 2px 2px rgba(0, 0, 0, 0.06);
+.card-body {
+  padding: 2rem;
 }
 
-.dark-theme .card-footer {
-  border-top: 1px solid #7d1479;
+/* --- ESTILO DO FORMULÁRIO COM LABELS FLUTUANTES --- */
+.form-group {
+  position: relative;
+  margin-bottom: 2rem;
 }
 
-.dark-theme .card-body {
-  border-top: 1px solid #7d1479;
+.form-icon {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  transition: color 0.3s;
 }
 
-.dark-theme .input-text {
-  background-color: #323232;
+.form-control {
+  width: 100%;
+  padding: 0.8rem 0.8rem 0.8rem 2.5rem; /* Espaço para o ícone */
+  border: 1px solid;
+  border-radius: 8px;
+  background-color: transparent;
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-label {
+  position: absolute;
+  top: 0.8rem;
+  left: 2.5rem;
+  pointer-events: none;
+  transition: all 0.2s ease-out;
+}
+
+/* Animação da Label Flutuante */
+.form-control:focus + .form-label,
+.form-control:not(:placeholder-shown) + .form-label,
+.form-control:valid + .form-label { /* Para o select */
+  top: -1rem;
+  left: 0.8rem;
+  font-size: 0.75rem;
+  padding: 0 0.2rem;
+}
+
+/* --- BOTÃO DE ENVIO --- */
+.button-container {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.btn-submit {
+  position: relative;
+  width: 100%;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
   color: white;
+  background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
-.light-theme .input-text {
-  background-color: #FFF;
-  color: black;
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
-.input-text::placeholder {
-  color: #5e5e5e !important;
+.btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
-.light-theme .option {
-  color: black !important;
+/* Estados de Loading e Sucesso do Botão */
+.btn-content { display: inline-flex; align-items: center; transition: all 0.3s ease; }
+.icon-loading, .icon-success { display: none; }
+
+.is-loading .btn-text { display: none; }
+.is-loading .icon-loading { display: inline-block; margin-right: 0.5rem; }
+
+.is-success { background: #28a745; }
+.is-success .btn-text, .is-success .icon-loading { display: none; }
+.is-success .icon-success { display: inline-block; font-size: 1.2rem; }
+
+
+/* --- TEMA CLARO --- */
+.light-theme .support-card {
+  background-color: #ffffff;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid #eef2f7;
+}
+.light-theme .card-subtitle { color: #6c757d; }
+.light-theme .form-icon { color: #adb5bd; }
+.light-theme .form-control { border-color: #ced4da; color: #212529; }
+.light-theme .form-label { background-color: #ffffff; color: #6c757d; }
+.light-theme .form-control:focus {
+  border-color: #2575fc;
+  box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.15);
+}
+.light-theme .form-control:focus + .form-label,
+.light-theme .form-control:focus ~ .form-icon {
+  color: #2575fc;
 }
 
-.dark-theme .option {
-  color: white !important;
-}
 
-.btn-solicitar {
-    background-color: #007bff; /* Cor de fundo padrão */
-    color: white; /* Cor do texto */
-    border: none; /* Remover borda padrão */
-    padding: 10px 20px; /* Espaçamento interno */
-    font-size: 1rem; /* Tamanho da fonte */
-    border-radius: 5px; /* Arredondar cantos */
-    transition: background-color 0.3s ease; /* Transição suave ao passar o mouse */
+/* --- TEMA ESCURO --- */
+.dark-theme .support-card {
+  background-color: #1e2027;
+  border: 1px solid #343a46;
+  color: #f8f9fa;
 }
-
-.btn-solicitar:hover {
-    background-color: #0056b3; /* Cor de fundo ao passar o mouse */
+.dark-theme .card-subtitle { color: #adb5bd; }
+.dark-theme .form-icon { color: #6c757d; }
+.dark-theme .form-control { border-color: #495057; color: #f8f9fa; }
+.dark-theme .form-label { background-color: #1e2027; color: #adb5bd; }
+.dark-theme .form-control:focus {
+  border-color: #6a11cb;
+  box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
 }
-
-.btn-solicitar:disabled {
-    background-color: #6c757d; /* Cor de fundo quando desabilitado */
-    cursor: not-allowed; /* Cursor indicando que está desabilitado */
+.dark-theme .form-control:focus + .form-label,
+.dark-theme .form-control:focus ~ .form-icon {
+  color: #a46de5;
 }
-
-.spinner-border {
-    margin-right: 5px; /* Espaçamento entre o spinner e o texto */
+.dark-theme select option {
+  background: #1e2027;
 }
-
-.btn-solicitar:focus {
-    outline: none; /* Remover a borda de foco */
-    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); /* Adicionar sombra ao focar */
-}
-
-.btn-solicitar span {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
 </style>

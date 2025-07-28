@@ -8,7 +8,8 @@ import BarChart from "@/components/BarChart.vue";
 <template>
   <div class="container-fluid d-flex dashboard-view p-0" :class="theme">
     <SideBar />
-    <div class="container-fluid content-wrapper p-0">
+    <!-- A classe 'content-wrapper-closed' será adicionada dinamicamente -->
+    <div class="container-fluid content-wrapper p-0" :class="{ 'content-wrapper-closed': !isSidebarOpen }">
       <MenuBar role="Professor" />
       <main class="p-4">
         <header class="d-flex align-items-center justify-content-between mb-4">
@@ -79,6 +80,7 @@ import BarChart from "@/components/BarChart.vue";
 <script>
 import { utils, writeFile } from "xlsx";
 import storage from "@/service/storage";
+import { mapState } from "vuex"; // Importa o mapState do Vuex
 
 export default {
   data() {
@@ -102,13 +104,11 @@ export default {
     };
   },
   computed: {
+    ...mapState({
+      isSidebarOpen: state => state.isSidebarOpen // Mapeia o estado da sidebar
+    }),
     theme() {
-      // Este 'theme' agora é uma propriedade computada.
-      // Ele está "assistindo" a variável 'theme' que importamos do store.
-      // Sempre que o valor no store mudar, esta propriedade será recalculada
-      // e a tela será atualizada AUTOMATICAMENTE.
-      console.log(storage.getTheme())
-      return storage.getTheme()
+      return storage.getTheme() || "light-theme";
     }
   },
   mounted() {
@@ -154,12 +154,21 @@ export default {
 };
 </script>
 
+<!-- NOVO BLOCO DE ESTILO GLOBAL -->
+<style>
+/* Estilos Globais para corrigir o layout e remover a barra de rolagem dupla */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Esconde a barra de rolagem principal do navegador */
+}
+</style>
+
+
 <style scoped>
-/* Importa a paleta de cores e a fonte (mantenha o <style> do código anterior) */
+/* Importa a paleta de cores e a fonte */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
 
-/* ... cole aqui TODO o conteúdo do <style scoped> da resposta anterior ... */
-/* Adicionando estilos específicos para os novos contêineres */
 .chart-container,
 .activity-container {
   background-color: var(--surface-color);
@@ -187,6 +196,72 @@ export default {
 
 .table thead th {
   background-color: var(--background-color);
+}
+
+/* --- CÓDIGO ALTERADO PARA O LAYOUT FIXO E DINÂMICO --- */
+
+/* 1. O container da view inteira */
+.dashboard-view {
+  height: 100vh; /* Garante que a view ocupe 100% da altura da tela */
+  overflow: hidden; /* Evita barras de rolagem duplas e desnecessárias */
+}
+
+/* 2. O wrapper do conteúdo (área à direita da sidebar) */
+.content-wrapper {
+  flex-grow: 1; 
+  display: flex; 
+  flex-direction: column;
+  min-width: 0;
+  
+  /* Define a margem inicial (para sidebar aberta) e a transição */
+  margin-left: 250px; /* Largura da sua sidebar aberta */
+  transition: margin-left 0.3s ease-in-out;
+}
+
+/* Nova regra para quando a sidebar está fechada */
+.content-wrapper.content-wrapper-closed {
+  margin-left: 80px; /* Largura da sua sidebar fechada */
+}
+
+.light-theme {
+  background-color: #F5F5F7;
+  color: #121214;
+}
+
+/* Tema dark */
+.dark-theme {
+  background-color: #121214;
+  color: #F5F5F7;
+}
+
+/* 3. O conteúdo principal que deve ter a rolagem */
+main {
+  flex-grow: 1; 
+  overflow-y: auto;
+}
+
+/* --- CÓDIGO ADICIONADO PARA RESPONSIVIDADE MOBILE --- */
+@media (max-width: 992px) {
+  /* Em telas menores, o conteúdo principal sempre ocupa 100% da largura */
+  .content-wrapper,
+  .content-wrapper.content-wrapper-closed {
+    margin-left: 0;
+  }
+
+  /* Estiliza a sidebar (componente filho) para se comportar como um overlay.
+    O seletor :deep() permite que o estilo deste componente "vaze" e afete
+    o componente filho <SideBar />.
+  */
+  :deep(.sidebar) {
+    /* Move a sidebar para fora da tela por padrão */
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+  }
+
+  /* Quando a sidebar NÃO estiver fechada, ela desliza para dentro da tela */
+  :deep(.sidebar:not(.sidebar-closed)) {
+    transform: translateX(0);
+  }
 }
 
 </style>

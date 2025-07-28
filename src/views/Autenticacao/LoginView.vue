@@ -1,5 +1,5 @@
 <script setup>
-import CardLogin from "../components/forms/LoginForm.vue";
+import CardLogin from "../../components/forms/LoginForm.vue";
 import NavBar from "@/components/NavBar.vue";
 </script>
 
@@ -10,7 +10,7 @@ import NavBar from "@/components/NavBar.vue";
     <div class="container h-100">
       <div class="row h-100 align-items-center justify-content-center">
 
-        <div class="col-lg-7 d-none d-lg-flex flex-column justify-content-center text-left pe-5">
+        <div class="col-lg-6 d-none d-lg-flex flex-column justify-content-center text-left pe-5 mt-5">
           <h1 class="display-4 fw-bold mb-3">Construindo o Futuro, Projeto a Projeto.</h1>
           <p class="lead text-secondary mb-4">
             Acesse o portal para gerenciar suas obras, equipes e cronogramas com eficiência.
@@ -23,7 +23,7 @@ import NavBar from "@/components/NavBar.vue";
           >
         </div>
 
-        <div class="col-lg-5 col-md-8 col-sm-12">
+        <div class="col-lg-6 col-md-8 col-sm-12">
           <CardLogin/>
         </div>
 

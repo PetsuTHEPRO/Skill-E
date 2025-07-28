@@ -10,7 +10,7 @@ import NavBar from "@/components/NavBar.vue";
     <div class="container h-100">
       <div class="row h-100 align-items-center justify-content-center">
 
-        <div class="col-lg-7 d-none d-lg-flex flex-column justify-content-center text-left pe-5 ">
+        <div class="col-lg-6 d-none d-lg-flex flex-column justify-content-center text-left pe-5 ">
           <h1 class="display-4 fw-bold mb-3">Crie Sua Conta e Comece a Construir.</h1>
           <p class="lead text-secondary mb-4">
             Preencha seus dados para ter acesso completo à nossa plataforma de gerenciamento de projetos.
@@ -23,7 +23,7 @@ import NavBar from "@/components/NavBar.vue";
           >
         </div>
 
-        <div class="col-lg-5 col-md-8 col-sm-12 my-5">
+        <div class="col-lg-6 col-md-8 col-sm-12 my-5">
           <RegisterForm />
         </div>
 

@@ -1,137 +1,261 @@
-<script setup>
-import SidebarMobile from "@/components/SidebarMobile.vue";
-import SearchBar from "@/components/SearchBar.vue";
-</script>
-
 <template>
-  <header class="construction-header">
-    <div class="d-flex align-items-center">
+  <header class="stylish-header">
+    <div class="header-left">
       <SidebarMobile />
-      <span class="d-none d-lg-block h4 fw-bold mb-0 header-title"
-        >Simulações</span
-      >
+      <div class="header-title-wrapper">
+        <i class="bi bi-box-seam-fill header-icon"></i>
+        <span class="header-title">Simulações</span>
+      </div>
     </div>
 
-    <div class="d-flex align-items-center">
-      <button
-        class="theme-toggle-btn mx-4"
-        :class="[themeClass]"
-        @click="toggleTheme()"
-        aria-label="Alternar tema"
-      ></button>
-      <button class="profile-btn">
+    <div class="profile-menu-wrapper" ref="profileMenu">
+      <button class="profile-btn" @click="toggleDropdown">
         <img
           width="40"
           height="40"
-          :src="`https://robohash.org/${name}.png?set=set4`"
+          :src="`https://api.dicebear.com/8.x/initials/svg?seed=${name}`"
           alt="Foto de perfil"
         />
-        <span class="visually-hidden">Profile</span>
       </button>
+
+      <transition name="dropdown-fade">
+        <div v-if="isDropdownOpen" class="profile-dropdown">
+          <div class="dropdown-header">
+            <strong>{{ name }}</strong>
+          </div>
+          <ul class="dropdown-list">
+            <li>
+              <a href="/perfil" class="dropdown-item">
+                <i class="bi bi-person-circle"></i>
+                <span>Meu Perfil</span>
+              </a>
+            </li>
+            <li>
+              <button @click="logout" class="dropdown-item as-button">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Sair</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </transition>
     </div>
   </header>
 </template>
 
 <script>
+import SidebarMobile from "@/components/SidebarMobile.vue";
 import CookiesService from "@/service/CookiesService";
-import storage from "@/service/storage";
 import store from "@/store/index.js";
 
 export default {
   name: "MenuBar",
-  props: {
-    role: String,
-  },
+  components: { SidebarMobile },
   data() {
     return {
-      name: CookiesService.getName(),
-      search: "",
-      themeClass:
-        storage.getTheme() === "dark-theme" ? "bi bi-moon" : "bi bi-sun",
+      name: CookiesService.getName() || "User",
+      isDropdownOpen: false,
     };
   },
   methods: {
     openMenu() {
       store.state.isSidebarOpen = !store.state.isSidebarOpen;
     },
-    toggleTheme() {
-      storage.toggleTheme() // Atualiza o Storage
-      const currentTheme = storage.getTheme()
-      this.themeClass = currentTheme === "dark-theme" ? "bi bi-moon" : "bi bi-sun"
-
+    toggleDropdown() {
+      this.isDropdownOpen = !this.isDropdownOpen;
     },
+    closeDropdown(event) {
+      if (this.$refs.profileMenu && !this.$refs.profileMenu.contains(event.target)) {
+        this.isDropdownOpen = false;
+      }
+    },
+    logout() {
+      console.log("Usuário deslogado!");
+      // Aqui você adicionaria a lógica para limpar os cookies e redirecionar
+      // CookiesService.clearAll();
+      // this.$router.push('/login');
+      this.isDropdownOpen = false;
+    },
+  },
+  mounted() {
+    // Adiciona um listener para fechar o dropdown ao clicar fora
+    document.addEventListener("click", this.closeDropdown);
+  },
+  beforeUnmount() {
+    // Remove o listener para evitar memory leaks
+    document.removeEventListener("click", this.closeDropdown);
   },
 };
 </script>
 
 <style scoped>
-/* Importa a fonte principal do tema */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
-
-/* Define as variáveis de cor para referência, baseadas no seu pedido */
+/* --- VARIÁVEIS DE COR (TEMA CONSTRUÇÃO) --- */
 :root {
-  --background-color: #f4f7f5;
-  --primary-color: #ff7a00;
-  --primary-hover-color: #e66a00;
-  --border-color: #dde2df;
-  --text-primary: #1e1e1e;
+  --header-bg: #FFFFFF;
+  --header-border: #EAECEE;
+  --text-primary: #2C3E50;
+  --text-secondary: #808B96;
+  --accent-primary: #FF7A00; /* Laranja Construção */
+  --accent-secondary: #00529B; /* Azul Técnico */
 }
 
-.construction-header {
-  /* Estilo principal da barra */
+/* --- ESTILO DO HEADER --- */
+.stylish-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1.5rem;
-  background-color: var(--background-color);
-  border-bottom: 2px solid var(--border-color);
+  padding: 0.8rem 1.5rem;
+  background-color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 100;
   font-family: "Inter", sans-serif;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-title-wrapper {
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (min-width: 992px) {
+  .header-title-wrapper {
+    display: flex;
+  }
+}
+
+.header-icon {
+  font-size: 1.5rem;
+  color: var(--accent-primary);
+}
+
 .header-title {
+  font-size: 1.25rem;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
-.theme-toggle-btn {
-  /* Botão de alternar tema */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background-color: var(--primary-color);
-  color: #ffffff;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+/* --- BOTÃO DE PERFIL E DROPDOWN --- */
+.profile-menu-wrapper {
+  position: relative;
 }
 
-.theme-toggle-btn:hover {
-  background-color: var(--primary-hover-color);
+@keyframes rotate-gradient {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .profile-btn {
-  /* Botão de perfil */
+  position: relative;
+  width: 48px;
+  height: 48px;
   padding: 0;
-  border: 2px solid var(--border-color);
-  background-color: transparent;
+  border: none;
+  background: var(--header-border);
   border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.2s ease-in-out;
+  cursor: pointer;
+  overflow: hidden;
 }
 
-.profile-btn:hover {
-  border-color: var(--primary-color);
+.profile-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: conic-gradient(
+    var(--accent-primary), 
+    var(--accent-secondary),
+    var(--accent-primary)
+  );
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.profile-btn:hover::before {
+  opacity: 1;
+  animation: rotate-gradient 4s linear infinite;
 }
 
 .profile-btn img {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 42px; /* Ligeiramente menor para mostrar a borda/fundo */
+  height: 42px;
   border-radius: 50%;
+  background-color: var(--header-bg);
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 220px;
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--header-border);
+  overflow: hidden;
+}
+
+.dropdown-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--header-border);
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-item.as-button {
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #F1F5F9; /* Um cinza muito claro */
+  color: var(--accent-primary);
+}
+
+.dropdown-item i {
+  font-size: 1.2rem;
+}
+
+/* --- ANIMAÇÃO DO DROPDOWN --- */
+.dropdown-fade-enter-active,
+.dropdown-fade-leave-active {
+  transition: all 0.2s ease-out;
+}
+
+.dropdown-fade-enter-from,
+.dropdown-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>

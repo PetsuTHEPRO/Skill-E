@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
-import axios from 'axios'; // Importamos o axios
+import axios from 'axios';
 
 // --- ESTADO DO COMPONENTE ---
 const isLoading = ref(true);
@@ -12,9 +12,9 @@ const parameters = reactive({});
 const initialParameters = ref({});
 
 // --- CONSTANTES DA API ---
-const projectId = 'cef17674-2aeb-4f2e-a5c7-dc546e8d4d32';
-const configId = 'f0d1481f-aaab-40ea-bff7-ffdb0ee0391f';
-const basicAuthCredentials = 'MDZhMjY4MmQtODA2My00N2U0LTk2OWEtNWMxNzllMmY4M2RmOml1eUp2MTZERzRHdDlEOWJlcUpCZTM2WUZjR2NYWkk1';
+const projectId = import.meta.env.VITE_PROJECT_ID;
+const configId = import.meta.env.VITE_CONFIG_ID;
+const basicAuthCredentials = import.meta.env.VITE_BASIC_AUTH_CREDENTIALS;
 const apiUrl = `https://services.api.unity.com/remote-config/v1/projects/${projectId}/configs/${configId}`;
 
 
@@ -27,12 +27,10 @@ async function fetchSimulationConfig() {
   isLoading.value = true;
   error.value = null;
   try {
-    // Usando axios.get()
     const response = await axios.get(apiUrl, {
       headers: { 'Authorization': `Basic ${basicAuthCredentials}` }
     });
     
-    // Com axios, os dados já estão em response.data
     const data = response.data;
     
     if (!data.value || !data.value[0] || !data.value[0].value) {
@@ -45,7 +43,6 @@ async function fetchSimulationConfig() {
 
   } catch (err) {
     console.error("Falha ao buscar configuração:", err);
-    // Axios coloca informações úteis de erro em err.response
     error.value = err.response?.data?.message || err.message;
   } finally {
     isLoading.value = false;
@@ -70,7 +67,6 @@ async function updateParameters() {
       ]
     };
 
-    // Usando axios.put(). O payload é o segundo argumento.
     await axios.put(apiUrl, payload, {
       headers: {
         'Authorization': `Basic ${basicAuthCredentials}`,
@@ -98,14 +94,17 @@ function resetParameters() {
 
 // Hook que chama a função para buscar os dados iniciais quando o componente é montado.
 onMounted(fetchSimulationConfig);
+
 </script>
 
 <template>
   <div class="simulation-controller-view">
     <div class="control-panel">
       <div class="panel-header">
-        <h2 class="fw-bold">Editor de Configuração Dinâmico</h2>
-        <p class="text-muted">Altere os parâmetros abaixo e clique em "Atualizar" para salvá-los na Unity Remote Config.</p>
+        <div class="header-content">
+          <h2 class="fw-bold">Editor de Configuração</h2>
+          <p class="text-muted">Altere os parâmetros e salve na Unity.</p>
+        </div>
       </div>
 
       <div class="separator"></div>
@@ -157,33 +156,57 @@ onMounted(fetchSimulationConfig);
 </template>
 
 <style scoped>
-/* Estrutura Principal Simplificada */
+/* Estilos com cores fixas para o tema light */
 .simulation-controller-view {
+  --bg-color: #f8f9fa;
+  --panel-bg-color: #ffffff;
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-muted: #718096;
+  --border-color: #dee2e6;
+  --input-bg-color: #ffffff;
+  --input-border-color: #ced4da;
+  --input-text-color: #212529;
+
   padding: 2rem;
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background-color: var(--bg-color);
   display: grid;
-  place-items: center; /* Centraliza o painel na tela */
+  place-items: center;
+  transition: background-color 0.3s ease;
 }
 
-/* Painel de Controle */
 .control-panel {
   width: 100%;
-  max-width: 500px; /* Largura máxima do painel */
-  background-color: #ffffff;
+  max-width: 500px;
+  background-color: var(--panel-bg-color);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .panel-header h2 {
-    color: #212529;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.panel-header .text-muted {
+  color: var(--text-muted) !important;
 }
 
 .separator {
-  border-top: 1px solid #dee2e6;
+  border-top: 1px solid var(--border-color);
   margin: 1.5rem 0;
 }
 
@@ -195,13 +218,26 @@ onMounted(fetchSimulationConfig);
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #495057;
+  color: var(--text-secondary);
 }
 .parameter-group small {
   display: block;
   margin-top: 0.25rem;
   font-size: 0.8rem;
-  color: #718096;
+  color: var(--text-muted);
+}
+
+/* Estilos para os inputs */
+.form-control {
+  background-color: var(--input-bg-color);
+  border: 1px solid var(--input-border-color);
+  color: var(--input-text-color);
+}
+.form-control:focus {
+  background-color: var(--input-bg-color);
+  border-color: #7D1479;
+  color: var(--input-text-color);
+  box-shadow: 0 0 0 0.25rem rgba(125, 20, 121, 0.25);
 }
 
 .action-buttons {
@@ -209,25 +245,27 @@ onMounted(fetchSimulationConfig);
 }
 
 .btn-primary {
-    background-color: #7D1479;
-    border-color: #7D1479;
-    font-weight: bold;
+  background-color: #7D1479;
+  border-color: #7D1479;
+  font-weight: bold;
 }
 .btn-primary:hover:not(:disabled) {
-    background-color: #6c1168;
-    border-color: #6c1168;
+  background-color: #6c1168;
+  border-color: #6c1168;
 }
 .btn-secondary {
-    font-weight: 500;
+  font-weight: 500;
+  background-color: var(--text-muted);
+  border-color: var(--text-muted);
+  color: var(--panel-bg-color);
 }
 .btn:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
-/* Grupo aninhado */
 .nested-group {
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1rem;
   margin-top: 0.5rem;

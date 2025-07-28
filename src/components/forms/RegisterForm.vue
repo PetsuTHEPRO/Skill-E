@@ -1,126 +1,63 @@
 <template>
-  <main
-    class="d-flex align-items-center justify-content-center p-3 text-center card-login"
-  >
-    <div class="mw-md w-100">
-      <h2 class="fs-5 fw-bold title-login">
-        Crie sua conta para iniciar seus projetos
-      </h2>
-      <form @submit.prevent="register" class="mt-4">
-        <div class="mb-3">
-          <input
-            id="name"
-            v-model="user.name"
-            placeholder="Seu nome completo"
-            type="text"
-            required
-            class="form-control px-3 py-2 border-2 rounded shadow-sm text-white bg-dark"
-          />
+  <main class="register-container">
+    <div class="register-card-wrapper">
+      <div class="register-card">
+        <span class="border-line top"></span>
+        <span class="border-line right"></span>
+        <span class="border-line bottom"></span>
+        <span class="border-line left"></span>
+
+        <div class="card-header-custom">
+          <h2 class="title-register">Crie sua Conta</h2>
+          <p class="subtitle-register">Junte-se a nós e comece a construir o futuro.</p>
         </div>
 
-        <div class="mb-3">
-          <input
-            id="telephone"
-            v-model="user.telephone"
-            type="tel"
-            placeholder="Seu telefone (apenas números)"
-            required
-            class="form-control px-3 py-2 border-2 rounded shadow-sm text-white bg-dark"
-          />
-        </div>
-
-        <div class="mb-3">
-          <input
-            id="email"
-            v-model="user.email"
-            placeholder="Seu e-mail de trabalho"
-            type="email"
-            required
-            class="form-control px-3 py-2 border-2 rounded shadow-sm text-white bg-dark"
-          />
-        </div>
-
-        <div class="mb-3">
-          <input
-            id="password"
-            v-model="user.password"
-            type="password"
-            placeholder="Crie uma senha"
-            required
-            class="form-control px-3 py-2 border-2 rounded shadow-sm text-white bg-dark"
-          />
-        </div>
-
-        <div class="mb-3">
-          <input
-            id="passwordConfirmation"
-            v-model="passwordConfirmation"
-            placeholder="Confirme sua senha"
-            type="password"
-            required
-            class="form-control px-3 py-2 border-2 rounded shadow-sm text-white bg-dark"
-          />
-        </div>
-
-        <div class="text-white mt-4">
-          <label class="fw-medium fs-sm">Qual sua função na obra?</label>
-          <div class="d-flex justify-content-center mt-2 gap-4">
-            <div class="form-check">
-              <input
-                type="radio"
-                class="form-check-input"
-                id="engenheiro"
-                value="ENGINEER"
-                v-model="user.role"
-              />
-              <label class="form-check-label" for="engenheiro">Engenheiro(a)</label>
-            </div>
-            <div class="form-check">
-              <input
-                type="radio"
-                class="form-check-input"
-                id="mestre"
-                value="FOREMAN"
-                v-model="user.role"
-              />
-              <label class="form-check-label" for="mestre">Mestre de Obras</label>
-            </div>
+        <form @submit.prevent="register" class="card-body-custom">
+          <div class="input-group">
+            <i class="bi bi-person input-icon"></i>
+            <input id="name" v-model="user.name" placeholder=" " type="text" required class="form-control" />
+            <label for="name" class="form-label">Nome Completo</label>
           </div>
-        </div>
 
-        <div v-if="user.role === 'ENGINEER'" class="mt-3">
-           <label for="especialidade" class="d-block fw-medium fs-sm text-white mb-1"
-              >Selecione sua especialidade</label>
-          <select
-            id="especialidade"
-            class="form-select px-3 py-2 border-2 rounded shadow-sm text-white bg-dark"
-            v-model="user.especialidade"
-            required
-          >
-            <option disabled value="">Clique para selecionar...</option>
-            <option value="Civil">Engenharia Civil</option>
-            <option value="Estrutural">Engenharia Estrutural</option>
-            <option value="Elétrica">Engenharia Elétrica</option>
-            <option value="Hidráulica">Engenharia Hidráulica</option>
-          </select>
-        </div>
+          <div class="input-group">
+            <i class="bi bi-telephone input-icon"></i>
+            <input id="telephone" v-model="user.telephone" type="tel" placeholder=" " required class="form-control" />
+            <label for="telephone" class="form-label">Telefone (só números)</label>
+          </div>
 
-        <div class="d-flex justify-content-center mt-4 mb-2">
-          <button
-            type="submit"
-            class="btn btn-warning w-100 px-4 py-2 mt-3 text-sm font-medium text-dark fw-bold rounded shadow-sm"
-          >
-            CRIAR CONTA
-          </button>
-        </div>
-      </form>
+          <div class="input-group">
+            <i class="bi bi-envelope input-icon"></i>
+            <input id="email" v-model="user.email" placeholder=" " type="email" required class="form-control" />
+            <label for="email" class="form-label">Seu melhor e-mail</label>
+          </div>
+
+          <div class="input-group">
+            <i class="bi bi-shield-lock input-icon"></i>
+            <input id="password" v-model="user.password" type="password" placeholder=" " required class="form-control" />
+            <label for="password" class="form-label">Crie uma senha forte</label>
+          </div>
+
+          <div class="input-group">
+            <i class="bi bi-shield-lock-fill input-icon"></i>
+            <input id="passwordConfirmation" v-model="passwordConfirmation" type="password" placeholder=" " required class="form-control" />
+            <label for="passwordConfirmation" class="form-label">Confirme sua senha</label>
+          </div>
+
+          <div class="button-wrapper">
+            <button type="submit" class="btn-register" :disabled="isLoading">
+              <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status"></span>
+              <span v-else>Finalizar Cadastro</span>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </main>
 </template>
 
 <script>
 import axios from "@/api/axios.js";
-import notificationService from '@/service/notificationService.js'
+import notificationService from '@/service/notificationService.js';
 
 export default {
   data() {
@@ -130,77 +67,66 @@ export default {
         telephone: "",
         email: "",
         password: "",
-        role: "ENGINEER", // Papel padrão atualizado
-        especialidade: "",
       },
-      passwordConfirmation: "",
+      passwordConfirmation: "", // Campo re-adicionado
+      isLoading: false,
     };
   },
   methods: {
-    // SUAS FUNÇÕES DE VALIDAÇÃO (INTACTAS E CORRETAS)
+    // Validações
     validateName() {
-      const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
-      if (!this.user.name) {
-        notificationService.error('O campo nome é obrigatório.');
-        return -1;
-      } else if (!nameRegex.test(this.user.name)) {
-        notificationService.error('O campo nome deve conter apenas letras.');
-        return -1;
+      const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]{3,}$/;
+      if (!this.user.name || !nameRegex.test(this.user.name)) {
+        notificationService.error('Nome inválido. Use apenas letras e no mínimo 3 caracteres.');
+        return false;
       }
+      return true;
     },
     validateTelephone() {
       const phoneRegex = /^\d{10,11}$/;
-      if (!this.user.telephone) {
-        notificationService.error('O campo telefone é obrigatório.');
-        return -1;
-      } else if (!phoneRegex.test(this.user.telephone)) {
-        notificationService.error('O telefone deve ter 10 ou 11 dígitos.');
-        return -1;
+      if (!this.user.telephone || !phoneRegex.test(this.user.telephone)) {
+        notificationService.error('Telefone inválido. Deve ter 10 ou 11 dígitos.');
+        return false;
       }
+      return true;
     },
     validateEmail() {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!this.user.email) {
-        notificationService.error('O campo e-mail é obrigatório.');
-        return -1;
-      } else if (!emailRegex.test(this.user.email)) {
+      if (!this.user.email || !emailRegex.test(this.user.email)) {
         notificationService.error('O formato do e-mail é inválido.');
-        return -1;
+        return false;
       }
+      return true;
     },
     validatePassword() {
-      if (!this.user.password) {
-        notificationService.error('O campo senha é obrigatório.');
-        return -1;
-      } else if (this.user.password.length < 6) {
+      if (!this.user.password || this.user.password.length < 6) {
         notificationService.error('A senha deve ter no mínimo 6 caracteres.');
-        return -1;
+        return false;
       }
+      return true;
     },
+    // Validação da confirmação de senha re-adicionada
     validatePasswordConfirmation() {
-      if (!this.passwordConfirmation) {
-        notificationService.error('A confirmação de senha é obrigatória.');
-        return -1;
-      } else if (this.passwordConfirmation !== this.user.password) {
+      if (this.user.password !== this.passwordConfirmation) {
         notificationService.error('As senhas não coincidem.');
-        return -1;
+        return false;
       }
-    },
-    validateEspecialidade() {
-      // Lógica atualizada para o novo papel de usuário
-      if (!this.user.especialidade && this.user.role === "ENGINEER") {
-        notificationService.error('A especialidade é obrigatória para engenheiros.');
-        return -1;
-      }
+      return true;
     },
 
     register() {
-      if (this.validateName() == -1) return;
-      if (this.validateTelephone() == -1) return;
-      if (this.validateEmail() == -1) return;
-      if (this.validatePassword() == -1) return;
-      if (this.validatePasswordConfirmation() == -1) return;
-      if (this.validateEspecialidade() == -1) return;
+      // Validação em cadeia
+      if (
+        !this.validateName() ||
+        !this.validateTelephone() ||
+        !this.validateEmail() ||
+        !this.validatePassword() ||
+        !this.validatePasswordConfirmation() // Validação adicionada
+      ) {
+        return;
+      }
+
+      this.isLoading = true;
 
       axios.registerUser(this.user)
         .then(() => {
@@ -213,61 +139,157 @@ export default {
           } else {
             notificationService.error("Servidor indisponível. Contate o suporte técnico!");
           }
+        })
+        .finally(() => {
+          this.isLoading = false;
         });
     },
   },
 };
 </script>
 
-<style>
-/* ESTILOS COPIADOS DA TELA DE LOGIN PARA CONSISTÊNCIA TOTAL */
-.card-login {
-  border: 4px solid;
-  border-image: linear-gradient(to right, #FFD700, #FFA500, #363636, #A9A9A9) 1;
-  border-radius: 10px;
-  background-color: #1C1C1C;
-  max-width: 500px;
+<style scoped>
+/* --- ANIMAÇÕES --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Animações da borda "Scanner" */
+@keyframes trace-top {
+  0% { width: 0; left: 0; }
+  100% { width: 100%; left: 0; }
+}
+@keyframes trace-right {
+  0% { height: 0; top: 0; }
+  100% { height: 100%; top: 0; }
+}
+@keyframes trace-bottom {
+  0% { width: 0; right: 0; }
+  100% { width: 100%; right: 0; }
+}
+@keyframes trace-left {
+  0% { height: 0; bottom: 0; }
+  100% { height: 100%; bottom: 0; }
+}
+
+
+/* --- CONTAINER PRINCIPAL --- */
+.register-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
   width: 100%;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+  min-height: 100vh; /* Garante que o container ocupe a tela toda */
 }
 
-.title-login {
-  color: white;
-  font-weight: bold;
+/* --- CARD E EFEITOS --- */
+.register-card-wrapper {
+  position: relative;
+  max-width: 600px; /* Card mais largo */
+  width: 100%;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
-/* Estilos para inputs e selects para combinar com o tema */
-.form-control.bg-dark, .form-select.bg-dark {
-    background-color: #323232 !important;
-    border-color: #555 !important;
+.register-card {
+  background-color: #1A1A1A;
+  color: #FFFFFF;
+  border-radius: 16px;
+  width: 100%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  overflow: hidden; /* Importante para a borda */
+  position: relative;
+  animation: fadeIn 0.8s ease-out;
 }
 
-.form-control.bg-dark:focus, .form-select.bg-dark:focus {
-    background-color: #323232 !important;
-    border-color: #FFCA2C !important;
-    box-shadow: 0 0 0 0.25rem rgba(255, 202, 44, 0.25);
-    color: white;
+/* Linhas da Animação de Borda */
+.border-line {
+  position: absolute;
+  background: linear-gradient(90deg, #FFD700, #E66A00);
+  box-shadow: 0 0 10px #FFD700, 0 0 20px #E66A00;
+}
+.top, .bottom { height: 4px; }
+.left, .right { width: 4px; }
+
+.top { top: 0; animation: trace-top 2s linear infinite; }
+.right { right: 0; animation: trace-right 2s linear infinite 2s; }
+.bottom { bottom: 0; animation: trace-bottom 2s linear infinite 4s; }
+.left { left: 0; animation: trace-left 2s linear infinite 6s; }
+
+
+.card-header-custom {
+  text-align: center;
+  padding: 2rem 1.5rem 1rem 1.5rem;
+}
+.title-register {
+  font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;
+}
+.subtitle-register {
+  color: #A9A9A9; font-size: 1rem;
+}
+.card-body-custom {
+  padding: 1.5rem 2.5rem 2.5rem 2.5rem;
 }
 
-/* Estilo do botão de ação */
-.btn-warning {
-    background-color: #E66A00;
-    border-color: #E66A00;
+/* --- GRUPO DE INPUT E ANIMAÇÕES --- */
+.input-group {
+  position: relative;
+  margin-bottom: 2rem;
+}
+.input-icon {
+  position: absolute; top: 50%; left: 15px;
+  transform: translateY(-50%);
+  color: #777; transition: color 0.3s;
+}
+.form-control {
+  width: 100%; background-color: #2C2C2C;
+  color: #FFFFFF; border: 1px solid #444;
+  border-radius: 8px; padding: 1rem 1rem 1rem 3.5rem;
+  font-size: 1rem; transition: all 0.3s;
+}
+.form-label {
+  position: absolute; top: 1rem; left: 3.5rem;
+  color: #AAA; pointer-events: none;
+  transition: all 0.2s ease-out;
+}
+.form-control:focus {
+  background-color: #2C2C2C; border-color: #E66A00;
+  box-shadow: 0 0 15px rgba(230, 106, 0, 0.2);
+  outline: none;
+}
+.form-control:focus + .form-label,
+.form-control:not(:placeholder-shown) + .form-label {
+  top: -0.7rem; left: 0.8rem; font-size: 0.8rem;
+  color: #E66A00; background-color: #212121;
+  padding: 0 0.4rem; border-radius: 4px;
+  z-index: 10;
+}
+.form-control:focus ~ .input-icon {
+  color: #E66A00;
 }
 
-/* Estilos para radio buttons para combinar com o tema */
-.form-check-input {
-  background-color: #323232;
-  border-color: #555;
+/* --- BOTÃO DE REGISTRO --- */
+.button-wrapper {
+  margin-top: 2rem;
 }
-.form-check-input:checked {
-  background-color: #E66A00;
-  border-color: #E66A00;
+.btn-register {
+  width: 100%; padding: 1rem; border: none;
+  border-radius: 8px; color: #1C1C1C;
+  font-weight: 700; font-size: 1rem;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #FFD700, #E66A00);
+  cursor: pointer; transition: all 0.3s ease;
+  display: flex; align-items: center; justify-content: center;
 }
-.form-check-input:focus {
-  box-shadow: 0 0 0 0.25rem rgba(230, 106, 0, 0.25);
+.btn-register:hover:not(:disabled) {
+  transform: scale(1.03);
+  box-shadow: 0 8px 25px rgba(255, 165, 0, 0.3);
 }
-.form-check-label{
-  color: white;
+.btn-register:disabled {
+  opacity: 0.6; cursor: not-allowed;
+}
+.spinner-border {
+  width: 1.2rem; height: 1.2rem;
 }
 </style>

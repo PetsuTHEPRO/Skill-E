@@ -1,234 +1,331 @@
 <template>
-  <div class="list-simulations-view">
-    <header class="view-header">
-      <h1>Minhas Simulações</h1>
-      <router-link :to="{ name: 'createSimulation' }" class="btn btn-primary">
-        + Criar Nova Simulação
-      </router-link>
-    </header>
+  <div class="container-fluid d-flex dashboard-view p-0">
+    <SideBar />
+    <div
+      class="container-fluid content-wrapper p-0"
+      :class="{ 'content-wrapper-closed': !isSidebarOpen }"
+    >
+      <MenuBar />
+      <main class="main-content">
+        <div class="list-simulations-view">
+          <header class="view-header">
+            <div class="header-title">
+              <i class="bi bi-boxes title-icon"></i>
+              <h1>Minhas Simulações</h1>
+            </div>
+            <router-link
+              :to="{ name: 'createSimulation' }"
+              class="btn btn-primary"
+            >
+              <i class="bi bi-plus-lg"></i>
+              Criar Nova Simulação
+            </router-link>
+          </header>
 
-    <div v-if="loading" class="loading-state">
-      <p>Carregando simulações...</p>
-    </div>
+          <div v-if="loading" class="simulations-grid">
+            <div v-for="n in 6" :key="n" class="skeleton-card">
+              <div class="skeleton-image"></div>
+              <div class="skeleton-content">
+                <div class="skeleton-line title"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line medium"></div>
+              </div>
+            </div>
+          </div>
 
-    <div v-else-if="error" class="error-state">
-      <p>Ocorreu um erro ao carregar as simulações. Por favor, tente novamente.</p>
-      <p class="error-message">Detalhes: {{ error }}</p>
-    </div>
-
-    <div v-else>
-      <div v-if="simulations.length === 0" class="empty-state">
-        <p>Nenhuma simulação encontrada.</p>
-        <p>Clique em "Criar Nova Simulação" para começar.</p>
-      </div>
-      
-      <table v-else class="simulations-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Velocidade Máx.</th>
-            <th>Altura do Garfo</th>
-            <th>Posição Inicial (X, Y, Z)</th>
-            <th>Tarefas</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="sim in simulations" :key="sim.id">
-            <td>{{ sim.id }}</td>
-            <td>{{ sim.maxSpeed }} m/s</td>
-            <td>{{ sim.forkHeight }} m</td>
-            <td>({{ sim.startPosition.x }}, {{ sim.startPosition.y }}, {{ sim.startPosition.z }})</td>
-            <td>{{ sim.tasks.join(', ') }}</td>
-            <td class="actions-cell">
-              <router-link :to="{ name: 'viewSimulation', params: { id: sim.id } }" class="btn btn-secondary">
-                Ver
+          <div v-else>
+            <div v-if="simulations.length === 0" class="empty-state">
+              <i class="bi bi-box-seam empty-icon"></i>
+              <h2>Nenhuma Simulação Encontrada</h2>
+              <p>Parece que você ainda não criou nenhuma simulação.</p>
+              <router-link
+                :to="{ name: 'createSimulation' }"
+                class="btn btn-primary mt-3"
+              >
+                Comece a criar agora
               </router-link>
-              <router-link :to="{ name: 'editSimulation', params: { id: sim.id } }" class="btn btn-tertiary">
-                Editar
-              </router-link>
-              <button @click="handleDelete(sim.id)" class="btn btn-danger">
-                Excluir
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+
+            <transition-group name="card-list" tag="div" class="simulations-grid">
+              <div v-for="sim in paginatedSimulations" :key="sim.id" class="simulation-card">
+                <div class="card-image-container">
+                  <img v-if="sim.image" :src="sim.image" alt="Imagem da simulação" class="card-image"/>
+                  <div v-else class="image-placeholder">
+                    <i class="bi bi-image-alt"></i>
+                  </div>
+                </div>
+
+                <div class="card-content">
+                  <div class="card-body">
+                    <h3 class="card-title">{{ sim.name }}</h3>
+                    <p class="card-description">{{ sim.description }}</p>
+                  </div>
+
+                  <div class="card-footer">
+                    <span class="simulation-id">ID: {{ sim.id }}</span>
+                    <div class="actions">
+                      <router-link :to="{ name: 'viewSimulation', params: { id: sim.id } }" class="btn btn-secondary">
+                        <i class="bi bi-eye"></i> Ver
+                      </router-link>
+                      <router-link :to="{ name: 'editSimulation', params: { id: sim.id } }" class="btn btn-tertiary">
+                        <i class="bi bi-pencil"></i> Editar
+                      </router-link>
+                      <button @click="handleDelete(sim.id)" class="btn btn-danger">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </transition-group>
+          </div>
+
+          <div v-if="!loading && simulations.length > 0 && totalPages > 1" class="pagination-controls">
+            <button @click="prevPage" :disabled="currentPage === 1" class="btn btn-secondary">Anterior</button>
+            <span>Página {{ currentPage }} de {{ totalPages }}</span>
+            <button @click="nextPage" :disabled="currentPage === totalPages" class="btn btn-secondary">Próxima</button>
+          </div>
+
+        </div>
+      </main>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue';
-import axiosService from '@/api/axios'; // Certifique-se que o caminho está correto
+<script>
+// O SCRIPT PERMANECE O MESMO, A LÓGICA DE BUSCA E PAGINAÇÃO ESTÁ CORRETA.
+import { mapState } from "vuex";
+import axiosService from "@/api/axios";
+import MenuBar from "@/components/MenuBar.vue";
+import SideBar from "@/components/SideBar.vue";
 
-// --- Estado Reativo ---
-const simulations = ref([]);
-const loading = ref(true);
-const error = ref(null);
-
-// --- Funções ---
-
-/**
- * Busca a lista de simulações da API quando o componente é montado.
- */
-const fetchSimulations = async () => {
-  try {
-    // IMPORTANTE: Estou assumindo que seu endpoint da API para listar as simulações é '/simulations'
-    const response = await axiosService.get('/simulations'); 
-    
-    // O JSON de exemplo é um objeto, mas uma lista deve retornar um array.
-    // Se a API retornar um único objeto, vamos colocá-lo em um array para o exemplo.
-    if (Array.isArray(response.data)) {
-      simulations.value = response.data;
-    } else {
-      // Isso é um fallback para o caso da API retornar o JSON de exemplo diretamente
-      simulations.value = [response.data]; 
-    }
-
-  } catch (err) {
-    console.error("Falha ao buscar simulações:", err);
-    error.value = err.message || 'Erro desconhecido';
-  } finally {
-    loading.value = false;
-  }
+export default {
+  components: { MenuBar, SideBar },
+  data() {
+    return {
+      simulations: [],
+      loading: true,
+      currentPage: 1,
+      itemsPerPage: 6,
+    };
+  },
+  computed: {
+    ...mapState({ isSidebarOpen: (state) => state.isSidebarOpen }),
+    totalPages() {
+      return Math.ceil(this.simulations.length / this.itemsPerPage);
+    },
+    paginatedSimulations() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.simulations.slice(start, end);
+    },
+  },
+  methods: {
+    async fetchSimulations() {
+      this.loading = true;
+      try {
+        const response = await axiosService.getSimulations();
+        console.log(response.data)
+        this.simulations = Array.isArray(response.data.content) ? response.data.content : [response.data.content];
+      } catch (err) {
+        console.error("Falha ao buscar simulações:", err);
+        this.simulations = [];
+      } finally {
+        this.loading = false;
+      }
+    },
+    async handleDelete(id) {
+      if (!confirm(`Você tem certeza que deseja excluir a simulação "${id}"?`)) return;
+      try {
+        await axiosService.delete(`/simulations/${id}`);
+        const index = this.simulations.findIndex(sim => sim.id === id);
+        if (index > -1) this.simulations.splice(index, 1);
+        if (this.paginatedSimulations.length === 0 && this.currentPage > 1) {
+          this.currentPage--;
+        }
+      } catch (err) {
+        console.error(`Falha ao excluir a simulação ${id}:`, err);
+        alert(`Não foi possível excluir a simulação. Verifique o console para mais detalhes.`);
+      }
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) this.currentPage++;
+    },
+    prevPage() {
+      if (this.currentPage > 1) this.currentPage--;
+    },
+  },
+  mounted() {
+    this.fetchSimulations();
+  },
 };
-
-/**
- * Lida com o clique no botão de exclusão.
- * @param {string} id - O ID da simulação a ser excluída.
- */
-const handleDelete = async (id) => {
-  // Pede confirmação ao usuário antes de uma ação destrutiva
-  if (!confirm(`Você tem certeza que deseja excluir a simulação "${id}"?`)) {
-    return;
-  }
-
-  try {
-    // IMPORTANTE: Assumindo que o endpoint para deletar é '/simulations/:id'
-    await axiosService.delete(`/simulations/${id}`);
-    
-    // Remove a simulação da lista local para feedback imediato na UI
-    simulations.value = simulations.value.filter(sim => sim.id !== id);
-    
-    // Opcional: Adicionar uma notificação de sucesso (toast)
-    alert(`Simulação "${id}" excluída com sucesso!`);
-
-  } catch (err) {
-    console.error(`Falha ao excluir a simulação ${id}:`, err);
-    alert(`Não foi possível excluir a simulação. Erro: ${err.message}`);
-  }
-};
-
-// --- Lifecycle Hook ---
-
-// Chama a função para buscar os dados assim que o componente for "montado" na página.
-onMounted(() => {
-  fetchSimulations();
-});
 </script>
 
 <style scoped>
-.list-simulations-view {
-  padding: 2rem;
-  font-family: sans-serif;
+/* --- ANIMAÇÕES E ESTILOS GERAIS (Mantidos) --- */
+@keyframes pulse {
+  0%, 100% { background-color: #f0f2f5; }
+  50% { background-color: #e2e8f0; }
 }
-
+.card-list-enter-active, .card-list-leave-active {
+  transition: all 0.5s ease;
+}
+.card-list-enter-from, .card-list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+.dashboard-view {
+  height: 100vh;
+  overflow: hidden;
+  background-color: #EBEBEF;
+}
+.content-wrapper {
+  flex-grow: 1; display: flex; flex-direction: column; min-width: 0;
+  margin-left: 250px; transition: margin-left 0.3s ease-in-out;
+}
+.content-wrapper.content-wrapper-closed { margin-left: 80px; }
+.main-content { flex-grow: 1; overflow-y: auto; padding: 2rem; }
+.list-simulations-view { max-width: 1400px; margin: 0 auto; }
 .view-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 2rem;
+}
+.header-title { display: flex; align-items: center; gap: 0.75rem; }
+.title-icon { font-size: 2rem; color: #ff7a00; }
+h1 { font-size: 1.8rem; color: #1d1d1f; font-weight: 700; }
+.empty-state {
+  text-align: center; padding: 4rem 2rem; background-color: #ffffff;
+  border-radius: 16px; color: #5a5a5a; border: 1px solid #eaeaea;
+}
+.empty-icon { font-size: 4rem; color: #e2e8f0; margin-bottom: 1rem; }
+
+/* --- GRID E SKELETON LOADER (Atualizado) --- */
+.simulations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+.skeleton-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #eaeaea;
+  overflow: hidden;
+}
+.skeleton-image {
+  height: 180px;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.skeleton-content { padding: 1.25rem; }
+.skeleton-line {
+  height: 1rem; border-radius: 4px;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  margin-bottom: 0.75rem;
+}
+.skeleton-line.title { width: 60%; height: 1.5rem; }
+.skeleton-line.medium { width: 80%; }
+
+/* --- CARD DE SIMULAÇÃO (REFEITO) --- */
+.simulation-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #eaeaea;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Garante que a imagem não ultrapasse as bordas arredondadas */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.simulation-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.07);
+}
+.card-image-container {
+  height: 180px;
+  background-color: #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Garante que a imagem cubra o espaço sem distorcer */
+}
+.image-placeholder .bi {
+  font-size: 3rem;
+  color: #d1d5db;
+}
+.card-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Faz este container ocupar o espaço restante */
+}
+.card-body {
+  padding: 1.25rem;
+  flex-grow: 1;
+}
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0 0 0.5rem 0;
+}
+.card-description {
+  color: #5a5a5a;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  /* Limita a descrição a 3 linhas para manter o card consistente */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+.card-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #eaeaea;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 1rem;
 }
-
-.loading-state, .error-state, .empty-state {
-  text-align: center;
-  padding: 3rem;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  color: #555;
+.simulation-id {
+  font-weight: 600; color: #b0b0b0; font-size: 0.8rem;
 }
+.actions { display: flex; gap: 0.5rem; }
 
-.error-state {
-  background-color: #fff0f0;
-  border: 1px solid #ffcccc;
-  color: #c53030;
+/* --- PAGINAÇÃO E BOTÕES (Mantidos) --- */
+.pagination-controls {
+  display: flex; justify-content: center; align-items: center;
+  gap: 1rem; margin-top: 2rem; padding: 1rem;
 }
-
-.error-message {
-  font-size: 0.9em;
-  color: #a52a2a;
-}
-
-.simulations-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.simulations-table th, .simulations-table td {
-  padding: 12px 15px;
-  border-bottom: 1px solid #ddd;
-}
-
-.simulations-table th {
-  background-color: #f4f4f4;
-  font-weight: bold;
-}
-
-.simulations-table tbody tr:hover {
-  background-color: #f9f9f9;
-}
-
-.actions-cell {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
 .btn {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  text-decoration: none;
-  font-size: 14px;
-  transition: background-color 0.2s;
-  display: inline-block;
-  text-align: center;
+  padding: 0.6rem 1.2rem; border: none; border-radius: 8px;
+  cursor: pointer; text-decoration: none; font-size: 14px;
+  font-weight: 600; transition: all 0.2s; display: inline-flex;
+  align-items: center; justify-content: center; gap: 0.5rem;
 }
-
 .btn-primary {
-  background-color: #007bff;
-  color: white;
+  background-color: #ff7a00; color: white;
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.2);
 }
 .btn-primary:hover {
-  background-color: #0056b3;
+  background-color: #e66f00; transform: translateY(-2px);
 }
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-.btn-secondary:hover {
-  background-color: #5a6268;
-}
-
-.btn-tertiary {
-  background-color: #17a2b8;
-  color: white;
-}
-.btn-tertiary:hover {
-  background-color: #138496;
-}
-
+.btn-secondary { background-color: #f0f2f5; color: #5a5a5a; }
+.btn-secondary:hover:not(:disabled) { background-color: #eaeaeb; }
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-tertiary { background: none; color: #5a5a5a; }
+.btn-tertiary:hover { background-color: #f5f5f7; }
 .btn-danger {
-  background-color: #dc3545;
-  color: white;
+  background-color: transparent; color: #c53030;
+  padding: 0.6rem; /* Deixa o botão de lixeira mais sutil */
 }
-.btn-danger:hover {
-  background-color: #c82333;
+.btn-danger:hover { background-color: #fbecec; }
+
+/* Responsividade */
+@media (max-width: 992px) {
+  /* Mantido */
+  .content-wrapper, .content-wrapper.content-wrapper-closed { margin-left: 0; }
+  .main-content { padding: 1rem; }
+  .view-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
 }
 </style>

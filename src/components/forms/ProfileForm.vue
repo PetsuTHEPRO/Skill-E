@@ -1,102 +1,78 @@
 <template>
-  <div class="flex-1 px-2">
-    <div class="my-4">
-
-      <div class="card" :class="theme">
-        <div class="card-header">
-          <div class="d-flex align-items-center gap-3">
-            <div class="avatar">
-              <img
-                alt="@shadcn"
-                class="rounded-circle"
-                width="50"
-                height="50"
-                style="
-                  background-color: white;
-                  border-radius: 50%;
-                  border: 1px solid black;
-                "
-                :src="`https://robohash.org/${user.name}`"
-              />
-            </div>
-            <div>
-              <h3 class="h5 fw-semibold">{{ user.name }}</h3>
-              <p>{{ user.login }}</p>
-            </div>
+  <div class="profile-container">
+    <div class="profile-card">
+      <div class="profile-card-header">
+        <div class="user-info">
+          <div class="avatar-ring">
+            <img
+              alt="Avatar do usuário"
+              class="avatar"
+              :src="`https://api.dicebear.com/8.x/initials/svg?seed=${user.name}`"
+            />
+          </div>
+          <div>
+            <h3 class="user-name">{{ user.name }}</h3>
+            <p class="user-email">{{ user.login }}</p>
           </div>
         </div>
-        <div class="card-body">
-          <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <input
-              type="text"
-              class="form-control"
-              id="name"
-              v-model="user.name"
-              :disabled="!isEditing"
-            />
-          </div>
-          <div class="mb-3">
-            <label for="telephone" class="form-label">Telefone</label>
-            <input
-              type="text"
-              class="form-control"
-              id="telephone"
-              v-model="user.telefone"
-              :disabled="!isEditing"
-            />
-          </div>
-          <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input
-              type="email"
-              class="form-control"
-              id="email"
-              v-model="user.login"
-              disabled
-            />
-          </div>
-          <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input
-              type="password"
-              disabled
-              class="form-control"
-              id="password"
-              value="*********"
-            />
-          </div>
-          <div class="mb-3" v-if="role === 'educator'">
-            <label for="specialty" class="form-label">Especialidade</label>
-            <select
-              id="especialidade"
-              class="d-block w-100 px-3 py-2 border border-2 rounded"
-              v-model="user.especialidade"
-              :disabled="!isEditing"
-            >
-              <option disabled value="">Selecione sua especialidade</option>
-              <option value="Doutorado">Doutorado</option>
-              <option value="Mestrado">Mestrado</option>
-              <option value="Especialização">Especialização</option>
-              <option value="Graduação">Graduação</option>
-              <!-- Adicione mais opções conforme necessário -->
-            </select>
-          </div>
-        </div>
-        <div class="card-footer text-end">
-          <button
-            class="btn btn-primary me-3"
-            @click="updateUser"
+      </div>
+      <div class="profile-card-body">
+        <div class="form-group">
+          <label for="name">Nome</label>
+          <input
+            type="text"
+            id="name"
+            class="form-control"
+            v-model="user.name"
             :disabled="!isEditing"
-          >
-            Save Changes
-          </button>
-          <button class="btn btn-secondary" 
-          @click="toggleEdit" 
-          :disabled="isEditing">
-            Edit Profile
-          </button>
+          />
         </div>
+        <div class="form-group">
+          <label for="telephone">Telefone</label>
+          <input
+            type="text"
+            id="telephone"
+            class="form-control"
+            v-model="user.telephone"
+            :disabled="!isEditing"
+          />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            class="form-control"
+            v-model="user.login"
+            disabled
+          />
+        </div>
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <input
+            type="password"
+            id="password"
+            class="form-control"
+            value="••••••••"
+            disabled
+          />
+        </div>
+      </div>
+      <div class="profile-card-footer">
+        <button
+          class="btn btn-edit"
+          @click="toggleEdit"
+          v-if="!isEditing"
+        >
+          Editar Perfil
+        </button>
+        <button
+          class="btn btn-save"
+          @click="updateUser"
+          v-if="isEditing"
+        >
+          Salvar Alterações
+        </button>
       </div>
     </div>
   </div>
@@ -112,147 +88,221 @@ export default {
   data() {
     return {
       isEditing: false,
-      theme: CookiesService.getTheme(),
       user: {
-        name: CookiesService.getName(),
-        telefone: StorageService.getPhone(),
-        especialidade: StorageService.getSpecialty(),
-        login: CookiesService.getEmail(),
+        id: CookiesService.getId(),
+        name: "",
+        telephone: "",
+        login: "", // Email
       },
-      role: CookiesService.getRole(),
     };
   },
+  // A propriedade 'theme' foi removida
   created() {
-    axios
-      .getUser(CookiesService.getId(), CookiesService.getRole())
-      .then((response) => {
-        this.user = response.data;
-      });
+    this.fetchUserData();
   },
   methods: {
+    fetchUserData() {
+      if (!this.user.id) return;
+      axios.getUser(this.user.id).then((response) => {
+        console.log(response.data)
+        this.user.name = response.data.name;
+        this.user.login = response.data.email;
+        this.user.telephone = response.data.telephone;
+      }).catch(error => {
+        notificationService.error("Não foi possível carregar os dados do usuário.");
+        console.error(error);
+      });
+    },
     toggleEdit() {
-      this.isEditing = true;
+      this.isEditing = !this.isEditing;
     },
-
-    validateName() {
-      const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/; // Aceita letras com acentos e espaços
-      if (!this.user.name) {
-        notificationService.error("Preencha o campo nome.");
-        return -1;
-      } else if (!nameRegex.test(this.user.name)) {
-        notificationService.error("Campo nome deve conter apenas letras.");
-        return -1;
+    validateForm() {
+      const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]{3,}$/;
+      if (!this.user.name || !nameRegex.test(this.user.name)) {
+        notificationService.error("Nome inválido. Use apenas letras e tenha no mínimo 3 caracteres.");
+        return false;
       }
-    },
-    validateTelephone() {
       const phoneRegex = /^\d{10,11}$/;
-      if (!this.user.telefone) {
-        notificationService.error("Preencha o campo telefone.");
-        return -1;
-      } else if (!phoneRegex.test(this.user.telefone)) {
-        notificationService.error("Telefone deve ter 10 ou 11 dígitos.");
-        return -1;
+      if (!this.user.telephone || !phoneRegex.test(this.user.telephone)) {
+        notificationService.error("Telefone inválido. Deve conter 10 ou 11 dígitos.");
+        return false;
       }
+      return true;
     },
-
-    validateEspecialidade() {
-      if (!this.user.especialidade && this.role === "EDUCATOR") {
-        notificationService.error("Especialidade é obrigatória.");
-        return -1;
-      }
-    },
-
     updateUser() {
-      if (this.validateName() == -1) return;
-      if (this.validateTelephone() == -1) return;
-      if (this.validateEspecialidade() == -1) return;
-
-      // Make a request to the backend API to verify the login credentials
-      axios
-        .updateUser(this.user, this.role)
-        .then((response) => {
-          console.log(response);
-          // Handle successful update response
-          notificationService.success(
-            "Dados do usuário atualizados com sucesso!"
-          );
-
-          CookiesService.setName(this.user.name);
-          StorageService.setPhone(this.user.telefone);
-          StorageService.setSpecialty(this.user.especialidade);
-        })
-        .catch((error) => {
-          if (error.response) {
-            // O servidor respondeu com um status fora do intervalo 2xx
-            notificationService.error(error.response);
-          } else {
-            notificationService.error(
-              "Servidor Offline, entre em contato com a equipe técnica!"
-            );
-            console.log(error);
-          }
-        });
-
+      if (!this.validateForm()) return;
+      const userDataToUpdate = {
+        name: this.user.name,
+        telephone: this.user.telephone,
+      };
+      axios.updateUser(this.user.id, userDataToUpdate).then(() => {
+        notificationService.success("Perfil atualizado com sucesso!");
+        CookiesService.setName(this.user.name);
+        StorageService.setPhone(this.user.telephone);
         this.isEditing = false;
+      }).catch(error => {
+        notificationService.error("Erro ao atualizar o perfil. Tente novamente.");
+        console.error(error);
+      });
     },
   },
 };
 </script>
 
-<style>
-
-.dark-theme .card {
-  border: 1px solid #7D1479;
+<style scoped>
+/* --- ANIMAÇÃO DE ENTRADA --- */
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.dark-theme .card-header {
-  border-bottom: 1px solid #7D1479;
+.profile-container {
+  padding: 1rem;
 }
 
-.dark-theme .card-footer {
-  border-top: 1px solid #7D1479;
+.profile-card {
+  max-width: 600px;
+  margin: 2rem auto;
+  border-radius: 12px;
+  overflow: hidden;
+  /* Estilos do tema light unificados aqui */
+  background-color: #FFFFFF;
+  color: #1A1D24;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+  /* Animação de entrada do card */
+  animation: fadeInSlideUp 0.6s ease-out forwards;
 }
 
-.light-theme .card-header{
-  background-color: #FAFAFA;
+.profile-card-header,
+.profile-card-body,
+.profile-card-footer {
+  padding: 1.5rem;
 }
 
-.light-theme .card-footer{
-  background-color: #FAFAFA;
+.profile-card-header {
+  border-bottom: 1px solid #E2E8F0;
 }
 
-.dark-theme .form-control, select {
-  background-color: #323232 !important;
-  border: 2px solid #DEE2E6 !important;
-  color: white !important;
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.light-theme .form-control, select {
-  background-color: #FFF;
-  border: 2px solid #DEE2E6 ;
-  color: black;
+.avatar-ring {
+  padding: 4px;
+  border-radius: 50%;
+  width: 68px;
+  height: 68px;
+  background: linear-gradient(45deg, #4A5568, #1A1D24);
 }
 
-.light-theme .form-control:disabled, select:disabled {
-  background-color: #F8F9FA ;
-  color: #808080;
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
-.dark-theme .form-control:disabled, select:disabled {
-  background-color: #323232;
-  color: #808080 !important;
+.user-name {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
-.light-theme {
-  background-color: #FFF;
-  color: #121214;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07), 0 2px 2px rgba(0, 0, 0, 0.06);
+.user-email {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748B;
 }
 
-/* Tema dark */
-.dark-theme {
-  background-color: #121214;
-  color: #f5f5f7;
+.form-group {
+  margin-bottom: 1.25rem;
+  /* Estado inicial para a animação em cascata */
+  opacity: 0;
+  animation: fadeInSlideUp 0.5s ease-out forwards;
 }
 
+/* --- ANIMAÇÃO EM CASCATA DOS CAMPOS DO FORMULÁRIO --- */
+.form-group:nth-child(1) { animation-delay: 0.2s; }
+.form-group:nth-child(2) { animation-delay: 0.3s; }
+.form-group:nth-child(3) { animation-delay: 0.4s; }
+.form-group:nth-child(4) { animation-delay: 0.5s; }
+
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #CBD5E1;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: #F8FAFC;
+  color: #1A1D24;
+}
+
+.form-control:disabled {
+  background-color: #E2E8F0;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #334155;
+  box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.2);
+}
+
+.profile-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  /* Animação de entrada dos botões */
+  opacity: 0;
+  animation: fadeInSlideUp 0.5s ease-out forwards;
+  animation-delay: 0.6s;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-edit {
+  background-color: #E2E8F0;
+  color: #334155;
+}
+
+.btn-save {
+  background-color: #1A1D24;
+  color: #FFFFFF;
+}
 </style>

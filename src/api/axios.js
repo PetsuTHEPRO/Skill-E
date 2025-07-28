@@ -39,13 +39,12 @@ export default {
   },
 
   /**
-   * Registra um novo engenheiro.
-   * @param {object} userData - { name, telephone, email, password, especialidade }
+   * Registra um novo usuário.
+   * @param {object} userData - { name, telephone, email, password }
    */
   registerUser(userData) {
-    // O 'role' é definido como 'engineer' por padrão no backend ou aqui, se necessário.
-    const payload = { ...userData, role: 'engineer' };
-    return axiosService.post("/auth/register", payload);
+    // A LÓGICA DE ROLE E ESPECIALIDADE FOI REMOVIDA
+    return axiosService.post("/auth/register", userData);
   },
 
   /**
@@ -57,25 +56,21 @@ export default {
 
   /**
    * Busca os dados do usuário logado.
-   * @param {string} id - ID do engenheiro.
+   * @param {string} id - ID do usuário.
    */
   getUser(id) {
-    return axiosService.get(`/engineer/atualUser`, { params: { id } });
+    // MUDANDO A ROTA PARA UM PADRÃO REST MELHOR
+    return axiosService.get(`/users/${id}`);
   },
 
-  /**
-   * Atualiza o perfil do engenheiro.
-   * @param {object} user - { login, name, telefone, especialidade }
+    /**
+   * Atualiza o perfil do usuário.
+   * @param {string} id - O ID do usuário a ser atualizado.
+   * @param {object} userData - { name, telephone }
    */
-  updateUser(user) {
-    return axiosService.put(
-      `/engineer/updateProfile?login=${user.login}`,
-      {
-        name: user.name,
-        telefone: user.telefone,
-        especialidade: user.especialidade,
-      }
-    );
+  updateUser(id, userData) {
+    // MUDANDO A ROTA PARA UM PADRÃO REST MELHOR E REMOVENDO ESPECIALIDADE
+    return axiosService.put(`/users/${id}`, userData);
   },
 
   // --- CRUD de Simulações ---

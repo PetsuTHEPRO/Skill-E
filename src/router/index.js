@@ -15,12 +15,12 @@ const routes = [
   {
     path: "/login",
     name: "login",
-    component: () => import("../views/LoginView.vue"),
+    component: () => import("../views/Autenticacao/LoginView.vue"),
   },
   {
     path: "/register",
     name: "register",
-    component: () => import("../views/RegisterView.vue"),
+    component: () => import("../views/Autenticacao/RegisterView.vue"),
   },
   {
     path: "/simulation/manager/", // Rota para o seu controlador de simulação existente
@@ -32,13 +32,13 @@ const routes = [
   {
     path: "/dashboard",
     name: "dashboard",
-    component: () => import("../views/Engineer/EngineerView.vue"),
+    component: () => import("../views/DashboardView.vue"),
     meta: { requiresAuth: true },
   },
   {
     path: "/profile",
     name: "profile",
-    component: () => import("../views/Engineer/ProfileEngineer.vue"),
+    component: () => import("../views/ProfileView.vue"),
     meta: { requiresAuth: true },
   },
   {
