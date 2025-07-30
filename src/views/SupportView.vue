@@ -5,8 +5,8 @@ import CardSuport from "@/components/SupportRequest.vue";
 </script>
 
 <template>
-  <div class="container-fluid d-flex support-view p-0" :class="theme">
-    <SideBar />
+  <div class="container-fluid d-flex support-view p-0">
+    <SideBar class="d-none d-lg-block"/>
     <div class="container-fluid content-wrapper p-0" :class="{ 'content-wrapper-closed': !isSidebarOpen }">
       <MenuBar />
       <main class="main-content">
@@ -72,6 +72,7 @@ html, body {
 .support-view {
   height: 100vh;
   overflow: hidden;
+  background-color: #F8F9FA;
 }
 
 .content-wrapper {
@@ -97,17 +98,6 @@ html, body {
 .support-form {
   max-width: 900px;
   margin: 0 auto;
-}
-
-/* Estilos de Tema */
-.light-theme {
-  background-color: #F5F5F7;
-  color: #121214;
-}
-
-.dark-theme {
-  background-color: #121214;
-  color: #F5F5F7;
 }
 
 /* Responsividade Mobile */

@@ -1,6 +1,6 @@
 <template>
   <div class="support-form-container">
-    <div class="support-card" :class="theme">
+    <div class="support-card bg-white">
       <div class="card-header">
         <h5 class="card-title">Formulário de Suporte</h5>
         <p class="card-subtitle">
@@ -85,7 +85,6 @@
 import axios from "@/api/axios.js";
 import CookiesService from "@/service/CookiesService.js";
 import notificationService from '@/service/notificationService.js';
-import StorageService from "@/service/storage.js";
 
 export default {
   data() {
@@ -100,12 +99,6 @@ export default {
       isLoading: false,
       isSuccess: false, // Novo estado para feedback de sucesso
     };
-  },
-  computed: {
-    theme() {
-      // Garante que o tema seja aplicado
-      return StorageService.getTheme() || 'light-theme';
-    }
   },
   methods: {
     validateForm() {
@@ -294,44 +287,21 @@ export default {
 
 
 /* --- TEMA CLARO --- */
-.light-theme .support-card {
+.support-card {
   background-color: #ffffff;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
   border: 1px solid #eef2f7;
 }
-.light-theme .card-subtitle { color: #6c757d; }
-.light-theme .form-icon { color: #adb5bd; }
-.light-theme .form-control { border-color: #ced4da; color: #212529; }
-.light-theme .form-label { background-color: #ffffff; color: #6c757d; }
-.light-theme .form-control:focus {
+.card-subtitle { color: #6c757d; }
+.form-icon { color: #adb5bd; }
+.form-control { border-color: #ced4da; color: #212529; }
+.form-label { background-color: #ffffff; color: #6c757d; }
+.form-control:focus {
   border-color: #2575fc;
   box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.15);
 }
-.light-theme .form-control:focus + .form-label,
-.light-theme .form-control:focus ~ .form-icon {
+.form-control:focus + .form-label,
+.form-control:focus ~ .form-icon {
   color: #2575fc;
-}
-
-
-/* --- TEMA ESCURO --- */
-.dark-theme .support-card {
-  background-color: #1e2027;
-  border: 1px solid #343a46;
-  color: #f8f9fa;
-}
-.dark-theme .card-subtitle { color: #adb5bd; }
-.dark-theme .form-icon { color: #6c757d; }
-.dark-theme .form-control { border-color: #495057; color: #f8f9fa; }
-.dark-theme .form-label { background-color: #1e2027; color: #adb5bd; }
-.dark-theme .form-control:focus {
-  border-color: #6a11cb;
-  box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
-}
-.dark-theme .form-control:focus + .form-label,
-.dark-theme .form-control:focus ~ .form-icon {
-  color: #a46de5;
-}
-.dark-theme select option {
-  background: #1e2027;
 }
 </style>

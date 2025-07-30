@@ -1,98 +1,183 @@
 <template>
-  <div class="edit-simulation-view">
-    <header class="view-header">
-      <h1>Editar Simulação #{{ id }}</h1>
-      <router-link :to="{ name: 'listSimulations' }" class="btn btn-secondary">
-        &larr; Voltar para a Lista
-      </router-link>
-    </header>
+  <div class="container-fluid d-flex dashboard-view p-0" :class="theme">
+    <SideBar class="d-none d-lg-block"/>
+    <div
+      class="container-fluid content-wrapper p-0"
+      :class="{ 'content-wrapper-closed': !isSidebarOpen }"
+    >
+      <MenuBar />
+      <main class="main-content">
+        <div class="edit-simulation-view">
+          <header class="view-header">
+            <h1>Editar Simulação #{{ id }}</h1>
+            <router-link
+              :to="{ name: 'listSimulations' }"
+              class="btn btn-secondary"
+            >
+              <i class="bi bi-arrow-left"></i> Voltar para a Lista
+            </router-link>
+          </header>
 
-    <div v-if="isLoading" class="loading-state">
-      <p>Carregando dados da simulação...</p>
-    </div>
-
-    <div v-else-if="error" class="error-feedback">
-      <p><strong>{{ error }}</strong></p>
-    </div>
-
-    <form v-else @submit.prevent="handleSubmit" class="simulation-form">
-      <div class="form-group">
-        <label for="forkHeight">Altura do Garfo (metros)</label>
-        <input
-          id="forkHeight"
-          v-model.number="simulation.forkHeight"
-          type="number"
-          step="0.1"
-          required
-        />
-      </div>
-
-      <div class="form-group">
-        <label for="maxSpeed">Velocidade Máxima (m/s)</label>
-        <input
-          id="maxSpeed"
-          v-model.number="simulation.maxSpeed"
-          type="number"
-          step="0.1"
-          required
-        />
-      </div>
-
-      <fieldset class="form-group-fieldset">
-        <legend>Posição Inicial</legend>
-        <div class="position-group">
-          <div class="form-group">
-            <label for="posX">Eixo X</label>
-            <input id="posX" v-model.number="simulation.startPosition.x" type="number" required />
+          <div v-if="isLoading" class="loading-state">
+            <span class="spinner-border" role="status"></span>
+            <span>Carregando dados da simulação...</span>
           </div>
-          <div class="form-group">
-            <label for="posY">Eixo Y</label>
-            <input id="posY" v-model.number="simulation.startPosition.y" type="number" required />
+
+          <div v-else-if="fetchError" class="error-feedback">
+            <p>
+              <strong>{{ fetchError }}</strong>
+            </p>
           </div>
-          <div class="form-group">
-            <label for="posZ">Eixo Z</label>
-            <input id="posZ" v-model.number="simulation.startPosition.z" type="number" required />
-          </div>
+
+          <form v-else @submit.prevent="handleSubmit" class="simulation-form">
+            <div class="form-group">
+              <label for="name">Título da Simulação</label>
+              <div class="input-wrapper">
+                <i class="bi bi-card-heading input-icon"></i>
+                <input
+                  id="name"
+                  v-model="simulation.name"
+                  type="text"
+                  placeholder="Ex: Simulação de Logística V1"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="description">Descrição</label>
+              <div class="input-wrapper">
+                <i class="bi bi-file-text-fill input-icon"></i>
+                <textarea
+                  id="description"
+                  v-model="simulation.description"
+                  rows="4"
+                  placeholder="Descreva o objetivo e os detalhes desta simulação."
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="image">URL da Imagem de Capa</label>
+              <div class="input-wrapper">
+                <i class="bi bi-image input-icon"></i>
+                <input
+                  id="image"
+                  v-model="simulation.image"
+                  type="url"
+                  placeholder="https://exemplo.com/imagem.png"
+                />
+              </div>
+              <small
+                >Cole o link para uma imagem que represente a simulação.</small
+              >
+            </div>
+
+            <fieldset class="form-group-fieldset">
+              <legend>
+                <i class="bi bi-clouds-fill"></i> Configurações da Unity Cloud
+              </legend>
+              <div class="form-group">
+                <label for="productId">ID do Projeto (Project ID)</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-folder2-open input-icon"></i>
+                  <input
+                    id="productId"
+                    v-model="simulation.productId"
+                    type="text"
+                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="environmentId"
+                  >ID do Ambiente (Environment ID)</label
+                >
+                <div class="input-wrapper">
+                  <i class="bi bi-cloud input-icon"></i>
+                  <input
+                    id="environmentId"
+                    v-model="simulation.environmentId"
+                    type="text"
+                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="configId">ID da Configuração (Config ID)</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-gear input-icon"></i>
+                  <input
+                    id="configId"
+                    v-model="simulation.configId"
+                    type="text"
+                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="keyApi">Chave de API (API Key)</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-key-fill input-icon"></i>
+                  <input
+                    id="keyApi"
+                    v-model="simulation.keyApi"
+                    type="password"
+                    placeholder="Deixe em branco para manter a chave atual"
+                  />
+                </div>
+                <small
+                  >A chave só precisa ser fornecida se você desejar
+                  atualizá-la.</small
+                >
+              </div>
+            </fieldset>
+
+            <div v-if="submitError" class="error-feedback">
+              <p><strong>Falha ao salvar:</strong> {{ submitError }}</p>
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                :disabled="isSubmitting"
+              >
+                <span v-if="isSubmitting">
+                  <span
+                    class="spinner-border spinner-border-sm"
+                    role="status"
+                  ></span>
+                  Salvando...
+                </span>
+                <span v-else>
+                  <i class="bi bi-check-lg"></i> Salvar Alterações
+                </span>
+              </button>
+            </div>
+          </form>
         </div>
-      </fieldset>
-
-      <div class="form-group">
-        <label for="tasks">Tarefas</label>
-        <input
-          id="tasks"
-          v-model="tasksInput"
-          type="text"
-          placeholder="Ex: pickup, charge, park"
-          required
-        />
-        <small>Separe as tarefas por vírgula.</small>
-      </div>
-
-      <div v-if="submitError" class="error-feedback">
-        <p><strong>Falha ao salvar as alterações:</strong> {{ submitError }}</p>
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-          {{ isSubmitting ? 'Salvando...' : 'Salvar Alterações' }}
-        </button>
-        <router-link :to="{ name: 'listSimulations' }" class="btn btn-cancel">
-          Cancelar
-        </router-link>
-      </div>
-    </form>
+      </main>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import axiosService from '@/api/axiosService.js';
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+// Ajuste o caminho se o seu axiosService estiver em um local diferente
+import axiosService from "@/api/axios";
+import notificationService from "@/service/notificationService";
 
-// --- Inicialização e Props ---
+// Importa os componentes de layout
+import MenuBar from "@/components/MenuBar.vue";
+import SideBar from "@/components/SideBar.vue";
+
 const router = useRouter();
 
-// Recebe o 'id' da URL como uma propriedade, graças ao `props: true` no router
+// Recebe o 'id' da URL como uma propriedade
 const props = defineProps({
   id: {
     type: String,
@@ -101,168 +186,263 @@ const props = defineProps({
 });
 
 // --- Estado Reativo ---
-const simulation = ref({
-  startPosition: {}, // Inicializa como objeto vazio para evitar erros de renderização
-});
-const tasksInput = ref(''); // String para o input de tarefas
 
-const isLoading = ref(true); // Para o carregamento inicial
-const isSubmitting = ref(false); // Para o processo de submissão
+// Objeto que guardará os dados do formulário. Começa vazio.
+const simulation = ref({});
 
-const error = ref(null); // Erro no carregamento inicial
-const submitError = ref(null); // Erro na submissão
+// Estados de controle da UI
+const isLoading = ref(true); // Controla o feedback de carregamento inicial
+const isSubmitting = ref(false); // Controla o estado do botão de salvar
 
-// --- Métodos ---
+// Estados de erro
+const fetchError = ref(null); // Erro ao buscar os dados
+const submitError = ref(null); // Erro ao enviar os dados
 
 /**
  * Busca os dados da simulação específica na API ao carregar o componente.
  */
 const fetchSimulationData = async () => {
+  isLoading.value = true;
+  fetchError.value = null;
   try {
     const response = await axiosService.getSimulationById(props.id);
+    // Preenche o objeto reativo com os dados vindos da API
     simulation.value = response.data;
-    
-    // Converte o array de tarefas da API em uma string para o input
-    if (response.data.tasks && Array.isArray(response.data.tasks)) {
-      tasksInput.value = response.data.tasks.join(', ');
-    }
-
   } catch (err) {
-    console.error('Falha ao carregar dados da simulação:', err);
-    error.value = 'Não foi possível encontrar a simulação solicitada.';
+    console.error("Falha ao carregar dados da simulação:", err);
+    fetchError.value = "Não foi possível encontrar a simulação solicitada.";
   } finally {
     isLoading.value = false;
   }
 };
 
 /**
- * Lida com a submissão do formulário para atualizar os dados.
+ * Lida com a submissão do formulário para ATUALIZAR os dados.
  */
 const handleSubmit = async () => {
   isSubmitting.value = true;
   submitError.value = null;
 
   try {
-    // Processa os dados para o formato esperado pela API
-    const payload = {
-      ...simulation.value,
-      tasks: tasksInput.value.split(',').map(task => task.trim()).filter(task => task),
-    };
+    // Cria uma cópia dos dados do formulário para enviar
+    const payload = { ...simulation.value };
 
-    // Chama o serviço da API para ATUALIZAR
+    // Lógica de segurança para a keyApi:
+    // Se o campo da chave estiver vazio, remova-o do payload.
+    // Assim, o backend não tentará atualizar a chave com um valor vazio.
+    if (!payload.keyApi || payload.keyApi.trim() === "") {
+      delete payload.keyApi;
+    }
+
+    // Chama o serviço da API para ATUALIZAR (update)
     await axiosService.updateSimulation(props.id, payload);
 
-    alert('Simulação atualizada com sucesso!');
-    router.push({ name: 'listSimulations' });
-
+    notificationService.success("Simulação atualizada com sucesso!");
+    router.push({ name: "listSimulations" });
   } catch (err) {
-    console.error('Falha ao atualizar simulação:', err);
-    submitError.value = err.response?.data?.message || err.message || 'Ocorreu um erro desconhecido.';
+    console.error("Falha ao atualizar simulação:", err);
+    submitError.value =
+      err.response?.data?.message ||
+      err.message ||
+      "Ocorreu um erro desconhecido.";
   } finally {
     isSubmitting.value = false;
   }
 };
 
 // --- Lifecycle Hook ---
-// Ao montar o componente, busca os dados da simulação
+// Ao montar o componente, chama a função para buscar os dados
 onMounted(() => {
   fetchSimulationData();
 });
 </script>
 
+<script>
+// Script opcional para tema e sidebar (igual ao do create)
+import storage from "@/service/storage";
+import { mapState } from "vuex";
+
+export default {
+  components: { MenuBar, SideBar },
+  computed: {
+    ...mapState({ isSidebarOpen: (state) => state.isSidebarOpen }),
+    theme() {
+      return storage.getTheme();
+    },
+  },
+};
+</script>
+
 <style scoped>
-/* Os estilos são idênticos aos do CreateSimulationView para manter a consistência */
+/* --- ESTILOS --- */
+/* Copie e cole EXATAMENTE o mesmo bloco <style> do seu componente de criação. */
+/* Apenas renomeei a classe principal para fins de clareza semântica. */
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard-view {
+  height: 100vh;
+  overflow: hidden;
+  font-family: sans-serif;
+}
+.content-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-left: 250px;
+  transition: margin-left 0.3s ease-in-out;
+}
+.content-wrapper.content-wrapper-closed {
+  margin-left: 80px;
+}
+.main-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+/* Classe principal da view de edição */
 .edit-simulation-view {
   max-width: 800px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  font-family: sans-serif;
+  margin: 0 auto;
+  padding: 2.5rem;
+  background-color: var(--surface-color, #ffffff);
+  color: var(--text-primary, #1d1d1f);
+  border-radius: 16px;
+  border: 1px solid var(--border-color, #eaeaea);
+  animation: fadeInSlideUp 0.6s ease-out;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem 2rem;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.view-header,
+.form-group,
+.form-group-fieldset,
+.form-actions {
+  opacity: 0;
+  animation: fadeInSlideUp 0.5s ease-out forwards;
+}
+.form-group:nth-of-type(1) {
+  animation-delay: 0.1s;
+}
+.form-group:nth-of-type(2) {
+  animation-delay: 0.2s;
+}
+.form-group:nth-of-type(3) {
+  animation-delay: 0.3s;
+}
+.form-group-fieldset {
+  animation-delay: 0.4s;
+}
+.form-actions {
+  animation-delay: 0.5s;
 }
 
 .view-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 1rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border-color, #eaeaea);
+  padding-bottom: 1.5rem;
 }
-
 h1 {
   font-size: 1.8rem;
-  color: #2d3748;
 }
-
-.loading-state {
-  text-align: center;
-  padding: 3rem;
-  font-size: 1.2rem;
-  color: #555;
-}
-
 .simulation-form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group label,
-.form-group-fieldset legend {
+.form-group label {
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #4a5568;
 }
-
+.form-group small {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+.input-wrapper {
+  position: relative;
+}
+.input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary, #888);
+  font-size: 1.1rem;
+  pointer-events: none;
+  transition: color 0.2s;
+}
+.input-wrapper:has(textarea) .input-icon {
+  top: 14px;
+  transform: none;
+}
 .form-group input,
-.form-group-fieldset input {
-  padding: 10px 12px;
-  border: 1px solid #cbd5e0;
-  border-radius: 6px;
+.form-group textarea {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid var(--border-color, #ccc);
+  background-color: var(--background-color, #f5f5f7);
+  border-radius: 8px;
   font-size: 1rem;
   transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
 }
-
-.form-group input:focus {
+.form-group input:focus,
+.form-group textarea:focus {
   outline: none;
-  border-color: #3182ce;
-  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+  border-color: var(--primary-color, #ff7a00);
+  box-shadow: 0 0 0 3px var(--primary-color-light, rgba(255, 122, 0, 0.2));
 }
-
-.form-group small {
-  margin-top: 0.25rem;
-  font-size: 0.8rem;
-  color: #718096;
+.form-group input:focus ~ .input-icon,
+.form-group textarea:focus ~ .input-icon {
+  color: var(--primary-color, #ff7a00);
 }
-
 .form-group-fieldset {
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 1rem 1.5rem;
-}
-
-.position-group {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  border: 1px solid var(--border-color, #eaeaea);
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
-
+.form-group-fieldset legend {
+  padding: 0 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  width: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 1rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--border-color, #eaeaea);
 }
-
 .error-feedback {
   background-color: #fed7d7;
   color: #c53030;
@@ -271,44 +451,60 @@ h1 {
   border: 1px solid #f56565;
   text-align: center;
 }
-
 .btn {
-  padding: 10px 20px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   text-decoration: none;
   font-size: 1rem;
   font-weight: 600;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
-
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
-
 .btn-primary {
-  background-color: #3182ce;
+  background-color: var(--primary-color, #ff7a00);
   color: white;
 }
-.btn-primary:hover:not(:disabled) {
-  background-color: #2b6cb0;
-}
-
 .btn-secondary {
-  background-color: #e2e8f0;
-  color: #2d3748;
+  background-color: var(--surface-color, #fff);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color, #eaeaea);
 }
-.btn-secondary:hover {
-  background-color: #cbd5e0;
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--background-color, #f5f5f7);
+}
+.spinner-border {
+  margin-right: 0.5rem;
 }
 
-.btn-cancel {
-  background-color: transparent;
-  color: #718096;
-}
-.btn-cancel:hover {
-  background-color: #edf2f7;
+@media (max-width: 992px) {
+  .content-wrapper,
+  .content-wrapper.content-wrapper-closed {
+    margin-left: 0;
+  }
+  .main-content {
+    padding: 1rem;
+  }
+  .edit-simulation-view {
+    padding: 1.5rem;
+  }
+  :deep(.sidebar) {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+  }
+  :deep(.sidebar:not(.sidebar-closed)) {
+    transform: translateX(0);
+  }
 }
 </style>

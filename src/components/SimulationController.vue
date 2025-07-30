@@ -1,99 +1,85 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import axios from 'axios';
+import { ref, reactive, onMounted, computed, watch } from "vue";
+import apiService from "@/api/axios.js";
+
+// --- PROPS ---
+const props = defineProps({
+  // O projectId agora pode vir do componente pai ou da URL
+  // O nome da prop foi ajustado para refletir que é o ID da simulação principal
+  simulationId: {
+    type: String,
+    required: true,
+  },
+});
 
 // --- ESTADO DO COMPONENTE ---
 const isLoading = ref(true);
-const isSubmitting = ref(false);
 const error = ref(null);
 
-// --- DADOS DINÂMICOS DA SIMULAÇÃO ---
+// NOVO: Guarda o array completo de configurações que vem da API
+const allConfigs = ref([]);
+// NOVO: Guarda a 'key' da configuração que está selecionada no <select>
+const selectedConfigKey = ref("");
+
+// O objeto 'parameters' agora representa o 'value' da configuração SELECIONADA
 const parameters = reactive({});
-const initialParameters = ref({});
+const initialParameters = ref({}); // Para a função de "Resetar"
 
-// --- CONSTANTES DA API ---
-const projectId = import.meta.env.VITE_PROJECT_ID;
-const configId = import.meta.env.VITE_CONFIG_ID;
-const basicAuthCredentials = import.meta.env.VITE_BASIC_AUTH_CREDENTIALS;
-const apiUrl = `https://services.api.unity.com/remote-config/v1/projects/${projectId}/configs/${configId}`;
-
-
-// --- FUNÇÕES DA API ---
-
-/**
- * Busca a configuração inicial da API da Unity usando axios.
- */
-async function fetchSimulationConfig() {
+// --- FUNÇÃO DA API ---
+async function fetchSimulationConfigs() {
   isLoading.value = true;
   error.value = null;
   try {
-    const response = await axios.get(apiUrl, {
-      headers: { 'Authorization': `Basic ${basicAuthCredentials}` }
-    });
-    
-    const data = response.data;
-    
-    if (!data.value || !data.value[0] || !data.value[0].value) {
-      throw new Error("A resposta da API não tem a estrutura esperada.");
+    // A chamada para o backend continua a mesma
+    const response = await apiService.getSimulationConfig(props.simulationId);
+
+    // Armazena o array completo de configurações
+    allConfigs.value = response.data;
+
+    // Se a lista não estiver vazia, seleciona a primeira configuração por padrão
+    if (allConfigs.value.length > 0) {
+      selectedConfigKey.value = allConfigs.value[0].key;
     }
-
-    const configData = data.value[0].value;
-    Object.assign(parameters, configData);
-    initialParameters.value = JSON.parse(JSON.stringify(configData));
-
   } catch (err) {
-    console.error("Falha ao buscar configuração:", err);
+    console.error("Falha ao buscar configurações:", err);
     error.value = err.response?.data?.message || err.message;
   } finally {
     isLoading.value = false;
   }
 }
 
-/**
- * Envia os parâmetros modificados de volta para a API da Unity usando axios.
- */
-async function updateParameters() {
-  isSubmitting.value = true;
-  error.value = null;
-  try {
-    const payload = {
-      type: "settings",
-      value: [
-        {
-          key: "simulation",
-          type: "json",
-          value: parameters
-        }
-      ]
-    };
+// --- LÓGICA DE CONTROLE ---
 
-    await axios.put(apiUrl, payload, {
-      headers: {
-        'Authorization': `Basic ${basicAuthCredentials}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    initialParameters.value = JSON.parse(JSON.stringify(parameters));
-    alert('Parâmetros atualizados com sucesso na Unity!');
+// NOVO: WATCH EFFECT
+// Observa a 'selectedConfigKey'. Quando ela muda (pelo <select>),
+// esta função é executada para atualizar o formulário.
+watch(selectedConfigKey, (newKey) => {
+  if (!newKey) return;
 
-  } catch (err) {
-    console.error("Falha ao atualizar parâmetros:", err);
-    error.value = err.response?.data?.message || err.message;
-  } finally {
-    isSubmitting.value = false;
+  // Encontra o objeto de configuração correspondente no array 'allConfigs'
+  const selectedConfig = allConfigs.value.find(
+    (config) => config.key === newKey
+  );
+
+  if (selectedConfig) {
+    // Limpa o objeto de parâmetros antigo
+    Object.keys(parameters).forEach((key) => delete parameters[key]);
+
+    // Preenche o objeto 'parameters' com o novo 'value'
+    Object.assign(parameters, selectedConfig.value);
+
+    // Atualiza a cópia inicial para que o botão "Resetar" funcione corretamente
+    initialParameters.value = JSON.parse(JSON.stringify(selectedConfig.value));
   }
-}
-
-// --- MÉTODOS DE CONTROLE ---
+});
 
 function resetParameters() {
   Object.assign(parameters, initialParameters.value);
-  console.log("Parâmetros resetados para o último estado salvo.");
 }
 
-// Hook que chama a função para buscar os dados iniciais quando o componente é montado.
-onMounted(fetchSimulationConfig);
+// --- LIFECYCLE HOOKS ---
+onMounted(fetchSimulationConfigs);
+watch(() => props.simulationId, fetchSimulationConfigs);
 </script>
 
 <template>
@@ -102,52 +88,126 @@ onMounted(fetchSimulationConfig);
       <div class="panel-header">
         <div class="header-content">
           <h2 class="fw-bold">Editor de Configuração</h2>
-          <p class="text-muted">Altere os parâmetros e salve na Unity.</p>
+          <p class="text-muted">
+            Altere os parâmetros da simulação em tempo real.
+          </p>
         </div>
       </div>
 
       <div class="separator"></div>
 
-      <div v-if="isLoading" class="text-center p-4">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="mt-2">Carregando configuração...</p>
-      </div>
-      <div v-else-if="error" class="alert alert-danger">
-        <strong>Erro ao carregar dados:</strong> {{ error }}
+      <div v-if="allConfigs.length > 0" class="parameter-group">
+        <label for="config-selector" class="fw-bold">Configuração</label>
+        <select id="config-selector" class="form-select" v-model="selectedConfigKey">
+          <option v-for="config in allConfigs" :key="config.key" :value="config.key">
+            {{ config.key }}
+          </option>
+        </select>
       </div>
       
-      <div v-else class="parameters-form">
-        <div v-for="(value, key) in parameters" :key="key" class="parameter-group">
-          <label :for="key" class="text-capitalize">{{ key }}</label>
+      <div v-if="successMessage" class="alert alert-success">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        {{ successMessage }}
+      </div>
 
-          <input v-if="typeof value === 'number'" :id="key" type="number" class="form-control" v-model.number="parameters[key]" />
-          
-          <input v-else-if="typeof value === 'string'" :id="key" type="text" class="form-control" v-model="parameters[key]" />
-          
+      <div v-if="isLoading" class="text-center p-4">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2">Carregando configuração da Unity...</p>
+      </div>
+
+      <div v-else-if="error" class="alert alert-danger">
+        <strong>Erro:</strong> {{ error }}
+      </div>
+
+      <div v-else class="parameters-form">
+        <div
+          v-for="(value, key) in parameters"
+          :key="key"
+          class="parameter-group"
+        >
+          <label :for="key" class="text-capitalize">{{
+            key.replace(/([A-Z])/g, " $1")
+          }}</label>
+
+          <input
+            v-if="typeof value === 'number'"
+            :id="key"
+            type="number"
+            step="0.1"
+            class="form-control"
+            v-model.number="parameters[key]"
+          />
+
+          <input
+            v-else-if="typeof value === 'string'"
+            :id="key"
+            type="text"
+            class="form-control"
+            v-model="parameters[key]"
+          />
+
           <template v-else-if="Array.isArray(value)">
-            <input :id="key" type="text" class="form-control" :value="value.join(', ')" @input="parameters[key] = $event.target.value.split(',').map(s => s.trim())"/>
+            <input
+              :id="key"
+              type="text"
+              class="form-control"
+              :value="value.join(', ')"
+              @input="
+                parameters[key] = $event.target.value
+                  .split(',')
+                  .map((s) => s.trim())
+              "
+            />
             <small>Separe os itens por vírgula.</small>
           </template>
-          
-          <fieldset v-else-if="typeof value === 'object' && value !== null" class="nested-group">
-            <div v-for="(nestedValue, nestedKey) in value" :key="nestedKey" class="parameter-group-nested">
-              <label :for="`${key}-${nestedKey}`" class="text-capitalize">{{ nestedKey }}</label>
-              <input :id="`${key}-${nestedKey}`" type="number" class="form-control form-control-sm" v-model.number="parameters[key][nestedKey]" />
+
+          <fieldset
+            v-else-if="typeof value === 'object' && value !== null"
+            class="nested-group"
+          >
+            <div
+              v-for="(nestedValue, nestedKey) in value"
+              :key="nestedKey"
+              class="parameter-group-nested"
+            >
+              <label :for="`${key}-${nestedKey}`" class="text-capitalize">{{
+                nestedKey.replace(/([A-Z])/g, " $1")
+              }}</label>
+              <input
+                :id="`${key}-${nestedKey}`"
+                type="number"
+                step="0.1"
+                class="form-control form-control-sm"
+                v-model.number="parameters[key][nestedKey]"
+              />
             </div>
           </fieldset>
         </div>
       </div>
 
       <div class="separator"></div>
-      
+
       <div class="action-buttons">
-        <button class="btn btn-primary w-100" @click="updateParameters" :disabled="isLoading || isSubmitting">
-          <i class="bi bi-cloud-upload-fill me-2"></i>
-          {{ isSubmitting ? 'Atualizando...' : 'Atualizar Parâmetros' }}
+        <button
+          class="btn btn-primary w-100"
+          @click="updateParameters"
+          :disabled="isLoading || isSubmitting"
+        >
+          <span
+            v-if="isSubmitting"
+            class="spinner-border spinner-border-sm me-2"
+            role="status"
+          ></span>
+          <i v-else class="bi bi-cloud-upload-fill me-2"></i>
+          {{ isSubmitting ? "Atualizando..." : "Atualizar na Unity" }}
         </button>
-        <button class="btn btn-secondary w-100 mt-2" @click="resetParameters" :disabled="isLoading || isSubmitting">
+        <button
+          class="btn btn-secondary w-100 mt-2"
+          @click="resetParameters"
+          :disabled="isLoading || isSubmitting"
+        >
           <i class="bi bi-arrow-counterclockwise me-2"></i>
-          Resetar
+          Resetar Alterações
         </button>
       </div>
     </div>
@@ -234,7 +294,7 @@ onMounted(fetchSimulationConfig);
 }
 .form-control:focus {
   background-color: var(--input-bg-color);
-  border-color: #7D1479;
+  border-color: #7d1479;
   color: var(--input-text-color);
   box-shadow: 0 0 0 0.25rem rgba(125, 20, 121, 0.25);
 }
@@ -244,8 +304,8 @@ onMounted(fetchSimulationConfig);
 }
 
 .btn-primary {
-  background-color: #7D1479;
-  border-color: #7D1479;
+  background-color: #7d1479;
+  border-color: #7d1479;
   font-weight: bold;
 }
 .btn-primary:hover:not(:disabled) {

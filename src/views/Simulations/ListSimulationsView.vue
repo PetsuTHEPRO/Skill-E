@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid d-flex dashboard-view p-0">
-    <SideBar />
+    <SideBar class="d-none d-lg-block"/>
     <div
       class="container-fluid content-wrapper p-0"
       :class="{ 'content-wrapper-closed': !isSidebarOpen }"
@@ -46,10 +46,23 @@
               </router-link>
             </div>
 
-            <transition-group name="card-list" tag="div" class="simulations-grid">
-              <div v-for="sim in paginatedSimulations" :key="sim.id" class="simulation-card">
+            <transition-group
+              name="card-list"
+              tag="div"
+              class="simulations-grid"
+            >
+              <div
+                v-for="sim in paginatedSimulations"
+                :key="sim.id"
+                class="simulation-card"
+              >
                 <div class="card-image-container">
-                  <img v-if="sim.image" :src="sim.image" alt="Imagem da simulação" class="card-image"/>
+                  <img
+                    v-if="sim.image"
+                    :src="sim.image"
+                    alt="Imagem da simulação"
+                    class="card-image"
+                  />
                   <div v-else class="image-placeholder">
                     <i class="bi bi-image-alt"></i>
                   </div>
@@ -64,29 +77,58 @@
                   <div class="card-footer">
                     <span class="simulation-id">ID: {{ sim.id }}</span>
                     <div class="actions">
-                      <router-link :to="{ name: 'viewSimulation', params: { id: sim.id } }" class="btn btn-secondary">
+                      <router-link
+                        :to="{ name: 'viewSimulation', params: { id: sim.id } }"
+                        class="btn btn-secondary"
+                      >
                         <i class="bi bi-eye"></i> Ver
                       </router-link>
-                      <router-link :to="{ name: 'editSimulation', params: { id: sim.id } }" class="btn btn-tertiary">
+                      <router-link
+                        :to="{ name: 'editSimulation', params: { id: sim.id } }"
+                        class="btn btn-tertiary"
+                      >
                         <i class="bi bi-pencil"></i> Editar
                       </router-link>
-                      <button @click="handleDelete(sim.id)" class="btn btn-danger">
+                      <button
+                        @click="handleDelete(sim.id)"
+                        class="btn btn-danger"
+                      >
                         <i class="bi bi-trash"></i>
                       </button>
                     </div>
                   </div>
                 </div>
-
               </div>
             </transition-group>
           </div>
 
-          <div v-if="!loading && simulations.length > 0 && totalPages > 1" class="pagination-controls">
-            <button @click="prevPage" :disabled="currentPage === 1" class="btn btn-secondary">Anterior</button>
-            <span>Página {{ currentPage }} de {{ totalPages }}</span>
-            <button @click="nextPage" :disabled="currentPage === totalPages" class="btn btn-secondary">Próxima</button>
-          </div>
+          <div
+            v-if="!loading && simulations.length > 0 && totalPages > 1"
+            class="pagination-controls"
+          >
+            <button
+              @click="prevPage"
+              :disabled="currentPage === 1"
+              class="btn btn-page"
+            >
+              <i class="bi bi-arrow-left"></i>
+              <span>Anterior</span>
+            </button>
 
+            <span class="page-info">
+              Página <strong>{{ currentPage }}</strong> de
+              <strong>{{ totalPages }}</strong>
+            </span>
+
+            <button
+              @click="nextPage"
+              :disabled="currentPage === totalPages"
+              class="btn btn-page"
+            >
+              <span>Próxima</span>
+              <i class="bi bi-arrow-right"></i>
+            </button>
+          </div>
         </div>
       </main>
     </div>
@@ -126,8 +168,10 @@ export default {
       this.loading = true;
       try {
         const response = await axiosService.getSimulations();
-        console.log(response.data)
-        this.simulations = Array.isArray(response.data.content) ? response.data.content : [response.data.content];
+        console.log(response.data);
+        this.simulations = Array.isArray(response.data.content)
+          ? response.data.content
+          : [response.data.content];
       } catch (err) {
         console.error("Falha ao buscar simulações:", err);
         this.simulations = [];
@@ -136,17 +180,20 @@ export default {
       }
     },
     async handleDelete(id) {
-      if (!confirm(`Você tem certeza que deseja excluir a simulação "${id}"?`)) return;
+      if (!confirm(`Você tem certeza que deseja excluir a simulação "${id}"?`))
+        return;
       try {
-        await axiosService.delete(`/simulations/${id}`);
-        const index = this.simulations.findIndex(sim => sim.id === id);
+        await axiosService.deleteSimulation(id);
+        const index = this.simulations.findIndex((sim) => sim.id === id);
         if (index > -1) this.simulations.splice(index, 1);
         if (this.paginatedSimulations.length === 0 && this.currentPage > 1) {
           this.currentPage--;
         }
       } catch (err) {
         console.error(`Falha ao excluir a simulação ${id}:`, err);
-        alert(`Não foi possível excluir a simulação. Verifique o console para mais detalhes.`);
+        alert(
+          `Não foi possível excluir a simulação. Verifique o console para mais detalhes.`
+        );
       }
     },
     nextPage() {
@@ -165,40 +212,81 @@ export default {
 <style scoped>
 /* --- ANIMAÇÕES E ESTILOS GERAIS (Mantidos) --- */
 @keyframes pulse {
-  0%, 100% { background-color: #f0f2f5; }
-  50% { background-color: #e2e8f0; }
+  0%,
+  100% {
+    background-color: #f0f2f5;
+  }
+  50% {
+    background-color: #e2e8f0;
+  }
 }
-.card-list-enter-active, .card-list-leave-active {
+.card-list-enter-active,
+.card-list-leave-active {
   transition: all 0.5s ease;
 }
-.card-list-enter-from, .card-list-leave-to {
+.card-list-enter-from,
+.card-list-leave-to {
   opacity: 0;
   transform: translateY(30px);
 }
 .dashboard-view {
   height: 100vh;
   overflow: hidden;
-  background-color: #EBEBEF;
+  background-color: #F8F9FA;
 }
 .content-wrapper {
-  flex-grow: 1; display: flex; flex-direction: column; min-width: 0;
-  margin-left: 250px; transition: margin-left 0.3s ease-in-out;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-left: 250px;
+  transition: margin-left 0.3s ease-in-out;
 }
-.content-wrapper.content-wrapper-closed { margin-left: 80px; }
-.main-content { flex-grow: 1; overflow-y: auto; padding: 2rem; }
-.list-simulations-view { max-width: 1400px; margin: 0 auto; }
+.content-wrapper.content-wrapper-closed {
+  margin-left: 80px;
+}
+.main-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 2rem;
+}
+.list-simulations-view {
+  max-width: 1400px;
+  margin: 0 auto;
+}
 .view-header {
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
 }
-.header-title { display: flex; align-items: center; gap: 0.75rem; }
-.title-icon { font-size: 2rem; color: #ff7a00; }
-h1 { font-size: 1.8rem; color: #1d1d1f; font-weight: 700; }
-.empty-state {
-  text-align: center; padding: 4rem 2rem; background-color: #ffffff;
-  border-radius: 16px; color: #5a5a5a; border: 1px solid #eaeaea;
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
-.empty-icon { font-size: 4rem; color: #e2e8f0; margin-bottom: 1rem; }
+.title-icon {
+  font-size: 2rem;
+  color: #ff7a00;
+}
+h1 {
+  font-size: 1.8rem;
+  color: #1d1d1f;
+  font-weight: 700;
+}
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: #ffffff;
+  border-radius: 16px;
+  color: #5a5a5a;
+  border: 1px solid #eaeaea;
+}
+.empty-icon {
+  font-size: 4rem;
+  color: #e2e8f0;
+  margin-bottom: 1rem;
+}
 
 /* --- GRID E SKELETON LOADER (Atualizado) --- */
 .simulations-grid {
@@ -216,14 +304,22 @@ h1 { font-size: 1.8rem; color: #1d1d1f; font-weight: 700; }
   height: 180px;
   animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
-.skeleton-content { padding: 1.25rem; }
+.skeleton-content {
+  padding: 1.25rem;
+}
 .skeleton-line {
-  height: 1rem; border-radius: 4px;
+  height: 1rem;
+  border-radius: 4px;
   animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   margin-bottom: 0.75rem;
 }
-.skeleton-line.title { width: 60%; height: 1.5rem; }
-.skeleton-line.medium { width: 80%; }
+.skeleton-line.title {
+  width: 60%;
+  height: 1.5rem;
+}
+.skeleton-line.medium {
+  width: 80%;
+}
 
 /* --- CARD DE SIMULAÇÃO (REFEITO) --- */
 .simulation-card {
@@ -277,7 +373,7 @@ h1 { font-size: 1.8rem; color: #1d1d1f; font-weight: 700; }
   /* Limita a descrição a 3 linhas para manter o card consistente */
   display: -webkit-box;
   -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;  
+  -webkit-box-orient: vertical;
   overflow: hidden;
 }
 .card-footer {
@@ -288,44 +384,173 @@ h1 { font-size: 1.8rem; color: #1d1d1f; font-weight: 700; }
   align-items: center;
 }
 .simulation-id {
-  font-weight: 600; color: #b0b0b0; font-size: 0.8rem;
+  font-weight: 600;
+  color: #b0b0b0;
+  font-size: 0.8rem;
 }
-.actions { display: flex; gap: 0.5rem; }
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
 
 /* --- PAGINAÇÃO E BOTÕES (Mantidos) --- */
 .pagination-controls {
-  display: flex; justify-content: center; align-items: center;
-  gap: 1rem; margin-top: 2rem; padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem;
 }
 .btn {
-  padding: 0.6rem 1.2rem; border: none; border-radius: 8px;
-  cursor: pointer; text-decoration: none; font-size: 14px;
-  font-weight: 600; transition: all 0.2s; display: inline-flex;
-  align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 .btn-primary {
-  background-color: #ff7a00; color: white;
+  background-color: #ff7a00;
+  color: white;
   box-shadow: 0 4px 12px rgba(255, 122, 0, 0.2);
 }
 .btn-primary:hover {
-  background-color: #e66f00; transform: translateY(-2px);
+  background-color: #e66f00;
+  transform: translateY(-2px);
 }
-.btn-secondary { background-color: #f0f2f5; color: #5a5a5a; }
-.btn-secondary:hover:not(:disabled) { background-color: #eaeaeb; }
-.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-tertiary { background: none; color: #5a5a5a; }
-.btn-tertiary:hover { background-color: #f5f5f7; }
+.btn-secondary {
+  background-color: #f0f2f5;
+  color: #5a5a5a;
+}
+.btn-secondary:hover:not(:disabled) {
+  background-color: #eaeaeb;
+}
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-tertiary {
+  background: none;
+  color: #5a5a5a;
+}
+.btn-tertiary:hover {
+  background-color: #f5f5f7;
+}
 .btn-danger {
-  background-color: transparent; color: #c53030;
+  background-color: transparent;
+  color: #c53030;
   padding: 0.6rem; /* Deixa o botão de lixeira mais sutil */
 }
-.btn-danger:hover { background-color: #fbecec; }
+.btn-danger:hover {
+  background-color: #fbecec;
+}
 
 /* Responsividade */
 @media (max-width: 992px) {
-  /* Mantido */
-  .content-wrapper, .content-wrapper.content-wrapper-closed { margin-left: 0; }
-  .main-content { padding: 1rem; }
-  .view-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .main-content {
+    padding: 1rem;
+  }
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .content-wrapper,
+  .content-wrapper.content-wrapper-closed {
+    margin-left: 0;
+  }
+
+  :deep(.sidebar) {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+    position: absolute; /* Garante que a sidebar flutue sobre o conteúdo */
+    z-index: 1050; /* Garante que fique acima de outros elementos */
+    height: 100vh;
+  }
+
+  :deep(.sidebar:not(.sidebar-closed)) {
+    transform: translateX(0);
+  }
 }
+
+/* --- ESTILIZAÇÃO DA PAGINAÇÃO --- */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center; /* Centraliza os controles */
+  align-items: center;
+  gap: 1rem; /* Espaçamento entre os elementos */
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color, #eaeaea);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.page-info {
+  font-size: 0.95rem;
+  color: var(--text-secondary, #555);
+  font-weight: 500;
+  min-width: 150px; /* Evita que o layout "pule" com a mudança de números */
+  text-align: center;
+}
+
+.page-info strong {
+  color: var(--text-primary, #1d1d1f);
+}
+
+.btn-page {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem; /* Espaço entre o ícone e o texto */
+  background-color: var(--surface-color, #fff);
+  color: var(--text-primary, #333);
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 8px; /* Cantos arredondados */
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Efeito de hover para botões ativos */
+.btn-page:not(:disabled):hover {
+  border-color: var(--primary-color, #ff7a00);
+  color: var(--primary-color, #ff7a00);
+  transform: translateY(-2px); /* Leve elevação */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Efeito de clique */
+.btn-page:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Estilo para botões desabilitados */
+.btn-page:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 </style>

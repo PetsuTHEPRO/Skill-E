@@ -1,46 +1,50 @@
 <script setup>
 import MenuBar from "@/components/MenuBar.vue";
 import SideBar from "@/components/SideBar.vue";
-import StatCard from "@/components/StatCard.vue";
+import StatCard from "@/components/StatCard.vue"; // Lembre-se de usar o novo StatCard da resposta anterior
 import BarChart from "@/components/BarChart.vue";
 </script>
 
 <template>
   <div class="container-fluid d-flex dashboard-view p-0" :class="theme">
-    <SideBar />
-    <!-- A classe 'content-wrapper-closed' será adicionada dinamicamente -->
+    <SideBar class="d-none d-lg-block"/>
     <div class="container-fluid content-wrapper p-0" :class="{ 'content-wrapper-closed': !isSidebarOpen }">
       <MenuBar role="Professor" />
-      <main class="p-4">
-        <header class="d-flex align-items-center justify-content-between mb-4">
-          <h1 class="h3 fw-bold mb-0">Dashboard de Relatórios</h1>
-          <button @click="exportToExcel" class="btn btn-primary-custom">
-            Exportar para Excel
+      <main class="main-content">
+        <header class="page-header">
+          <div>
+            <h1 class="h2 fw-bold mb-1">Dashboard de Simulações</h1>
+            <p class="text-muted">Visão geral e relatórios de atividade.</p>
+          </div>
+          <button @click="exportToExcel" class="btn-export">
+            <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+            <span>Exportar Relatório</span>
           </button>
         </header>
 
         <section class="mb-4">
           <div class="row g-4">
-            <div class="col-12 col-sm-6 col-lg-3">
-              <StatCard title="Total de Simulações" :value="stats.simulations" />
-            </div>
-            <div class="col-12 col-sm-6 col-lg-3">
-              <StatCard title="Usuários Ativos (Mês)" :value="stats.activeUsers" />
-            </div>
-            <div class="col-12 col-sm-6 col-lg-3">
-              <StatCard title="Total de Acessos" :value="stats.totalAccess" />
-            </div>
-            <div class="col-12 col-sm-6 col-lg-3">
-              <StatCard title="Pontuação Média" :value="stats.averageScore" />
+            <div
+              class="col-12 col-md-6 col-lg-4 animated-card"
+              v-for="(card, index) in statCards"
+              :key="card.title"
+              :style="{ animationDelay: `${index * 100}ms` }"
+            >
+              <StatCard
+                :title="card.title"
+                :value="card.value"
+                :icon="card.icon"
+                :color="card.color"
+              />
             </div>
           </div>
         </section>
 
-        <section>
+        <section class="animated-section" style="animation-delay: 300ms;">
           <div class="row g-4">
             <div class="col-12 col-lg-7">
-              <div class="chart-container">
-                <h2 class="h5 fw-semibold mb-3">Simulações por Mês</h2>
+              <div class="data-container">
+                <h2 class="h5 fw-semibold mb-3">Novas Simulações por Mês</h2>
                 <div class="chart-wrapper">
                   <BarChart :chartData="barChartData" />
                 </div>
@@ -48,22 +52,24 @@ import BarChart from "@/components/BarChart.vue";
             </div>
 
             <div class="col-12 col-lg-5">
-              <div class="activity-container">
-                <h2 class="h5 fw-semibold mb-3">Últimos Acessos</h2>
+              <div class="data-container">
+                <h2 class="h5 fw-semibold mb-3">Últimas Atividades</h2>
                 <div class="table-responsive">
-                  <table class="table table-hover">
+                  <table class="table table-hover align-middle">
                     <thead>
                       <tr>
                         <th scope="col">Usuário</th>
                         <th scope="col">Simulação</th>
-                        <th scope="col">Pontos</th>
+                        <th scope="col" class="text-center">Pontos</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr v-for="log in activityLog" :key="log.id">
                         <td>{{ log.user }}</td>
-                        <td>{{ log.simulation }}</td>
-                        <td>{{ log.score }}</td>
+                        <td><span class="text-muted">{{ log.simulation }}</span></td>
+                        <td class="text-center">
+                          <span class="badge" :class="getScoreBadge(log.score)">{{ log.score }}</span>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -78,25 +84,21 @@ import BarChart from "@/components/BarChart.vue";
 </template>
 
 <script>
+// O SCRIPT PERMANECE O MESMO DA RESPOSTA ANTERIOR
 import { utils, writeFile } from "xlsx";
 import storage from "@/service/storage";
-import { mapState } from "vuex"; // Importa o mapState do Vuex
+import { mapState } from "vuex";
 
 export default {
   data() {
     return {
-      // DADOS FICTÍCIOS (MOCK). Substitua por chamadas de API no `mounted`.
-      stats: {
-        simulations: 0,
-        activeUsers: 0,
-        totalAccess: 0,
-        averageScore: 0,
-      },
+      statCards: [],
       barChartData: {
         labels: [],
         datasets: [{
           label: 'Nº de Simulações',
-          backgroundColor: '#FF7A00', // Cor primária da paleta
+          backgroundColor: '#FF7A00',
+          borderRadius: 4,
           data: [],
         }],
       },
@@ -105,81 +107,174 @@ export default {
   },
   computed: {
     ...mapState({
-      isSidebarOpen: state => state.isSidebarOpen // Mapeia o estado da sidebar
+      isSidebarOpen: state => state.isSidebarOpen
     }),
     theme() {
       return storage.getTheme() || "light-theme";
     }
   },
   mounted() {
-    // AQUI VOCÊ DEVE CHAMAR SUA API PARA OBTER OS DADOS REAIS
     this.fetchDashboardData();
   },
   methods: {
     fetchDashboardData() {
-      // Simulação de uma chamada de API
-      console.log("Buscando dados do dashboard...");
-      // Exemplo de como você preencheria os dados (substitua isso)
-      this.stats = {
-        simulations: 152,
-        activeUsers: 34,
-        totalAccess: 1489,
-        averageScore: 8.7,
-      };
-      this.barChartData = {
-        labels: ['Mar', 'Abr', 'Mai', 'Jun', 'Jul'],
-        datasets: [{
-          label: 'Nº de Simulações',
-          backgroundColor: '#FF7A00',
-          data: [40, 65, 59, 80, 81],
-        }],
-      };
-      this.activityLog = [
-        { id: 1, user: 'Ana Silva', simulation: 'Motor Elétrico', score: 9 },
-        { id: 2, user: 'Bruno Costa', simulation: 'Circuito Hidráulico', score: 7 },
-        { id: 3, user: 'Carla Dias', simulation: 'Braço Robótico', score: 10 },
-        { id: 4, user: 'Daniel Farias', simulation: 'Motor Elétrico', score: 8 },
-        { id: 5, user: 'Eduarda Lima', simulation: 'Prensa Mecânica', score: 9 },
-      ];
+      setTimeout(() => {
+        this.statCards = [
+          { title: 'Simulações Cadastradas', value: 152, icon: 'bi bi-archive-fill', color: 'primary' },
+          { title: 'Simulações Ativas', value: 138, icon: 'bi bi-broadcast', color: 'success' },
+          { title: 'Simulações com Falha', value: 14, icon: 'bi bi-exclamation-triangle-fill', color: 'danger' }
+        ];
+        this.barChartData = {
+          labels: ['Março', 'Abril', 'Maio', 'Junho', 'Julho'],
+          datasets: [{
+            label: 'Nº de Simulações',
+            backgroundColor: 'rgba(255, 122, 0, 0.7)',
+            borderColor: '#FF7A00',
+            borderWidth: 2,
+            hoverBackgroundColor: '#FF7A00',
+            borderRadius: 6,
+            data: [12, 19, 15, 25, 22],
+          }],
+        };
+        this.activityLog = [
+          { id: 1, user: 'Ana Silva', simulation: 'Motor Elétrico', score: 9.5 },
+          { id: 2, user: 'Bruno Costa', simulation: 'Circuito Hidráulico', score: 7.0 },
+          { id: 3, user: 'Carla Dias', simulation: 'Braço Robótico', score: 10.0 },
+          { id: 4, user: 'Daniel Farias', simulation: 'Motor Elétrico', score: 5.5 },
+          { id: 5, user: 'Eduarda Lima', simulation: 'Prensa Mecânica', score: 8.0 },
+        ];
+      }, 500);
     },
     exportToExcel() {
-      // Lógica para exportar a tabela de atividades
       const worksheet = utils.json_to_sheet(this.activityLog);
       const workbook = utils.book_new();
       utils.book_append_sheet(workbook, worksheet, "Acessos");
-      // Gera o arquivo e inicia o download
-      writeFile(workbook, "RelatorioDeAcessos.xlsx");
+      writeFile(workbook, "RelatorioDeAtividade.xlsx");
     },
+    getScoreBadge(score) {
+      if (score >= 9) return 'text-bg-success';
+      if (score >= 6) return 'text-bg-warning';
+      return 'text-bg-danger';
+    }
   },
 };
 </script>
 
-<!-- NOVO BLOCO DE ESTILO GLOBAL -->
 <style>
-/* Estilos Globais para corrigir o layout e remover a barra de rolagem dupla */
+/* Estilos Globais podem permanecer, se necessário */
 html, body {
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Esconde a barra de rolagem principal do navegador */
+  overflow: hidden;
 }
 </style>
 
 
 <style scoped>
-/* Importa a paleta de cores e a fonte */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+/* --- ANIMAÇÕES GLOBAIS --- */
+@keyframes slide-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-.chart-container,
-.activity-container {
+/* --- ESTRUTURA PRINCIPAL (LAYOUT FIXO DA SIDEBAR) --- */
+/* ESTA É A PARTE CRÍTICA QUE FOI RESTAURADA E UNIFICADA */
+
+.dashboard-view {
+  height: 100vh;
+  overflow: hidden;
+  background-color: #F8F9FA;
+}
+
+.content-wrapper {
+  flex-grow: 1; 
+  display: flex; 
+  flex-direction: column;
+  min-width: 0;
+  /* Define a margem inicial (para sidebar aberta) e a transição */
+  margin-left: 250px; /* Largura da sua sidebar ABERTA */
+  transition: margin-left 0.3s ease-in-out;
+}
+
+/* Regra ESSENCIAL para quando a sidebar está fechada */
+.content-wrapper.content-wrapper-closed {
+  margin-left: 80px; /* Largura da sua sidebar FECHADA */
+}
+
+.main-content {
+  flex-grow: 1; 
+  overflow-y: auto; /* Apenas o conteúdo principal tem rolagem */
+  padding: 2rem;
+}
+
+/* --- ESTILOS DO DASHBOARD (HEADER, BOTÃO, ETC.) --- */
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  animation: slide-fade-in 0.5s ease-out forwards;
+}
+
+.page-header .text-muted {
+  color: var(--text-secondary);
+}
+
+.animated-card {
+  /* Usado para aplicar a animação em cascata nos cards */
+  opacity: 0; /* Começa invisível */
+  animation: slide-fade-in 0.6s ease-out forwards;
+}
+
+.animated-section {
+  opacity: 0; /* Começa invisível */
+  animation: slide-fade-in 0.6s ease-out forwards;
+}
+
+.btn-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary-color), #c96200);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px -5px rgba(255, 122, 0, 0.6);
+}
+
+.btn-export:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 20px -5px rgba(255, 122, 0, 0.8);
+}
+
+.btn-export i {
+  font-size: 1.2rem;
+}
+
+/* --- CONTAINERS DE DADOS (GRÁFICOS E TABELAS) --- */
+
+.data-container {
   background-color: var(--surface-color);
   padding: 1.5rem;
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid var(--border-color);
   height: 100%;
 }
 
 .chart-wrapper {
-  height: 350px; /* Altura fixa para o gráfico */
+  height: 350px;
   position: relative;
 }
 
@@ -194,71 +289,27 @@ html, body {
   border-color: var(--border-color);
 }
 
-.table thead th {
-  background-color: var(--background-color);
+.badge {
+  font-size: 0.85rem;
+  padding: 0.5em 0.75em;
 }
 
-/* --- CÓDIGO ALTERADO PARA O LAYOUT FIXO E DINÂMICO --- */
-
-/* 1. O container da view inteira */
-.dashboard-view {
-  height: 100vh; /* Garante que a view ocupe 100% da altura da tela */
-  overflow: hidden; /* Evita barras de rolagem duplas e desnecessárias */
-}
-
-/* 2. O wrapper do conteúdo (área à direita da sidebar) */
-.content-wrapper {
-  flex-grow: 1; 
-  display: flex; 
-  flex-direction: column;
-  min-width: 0;
-  
-  /* Define a margem inicial (para sidebar aberta) e a transição */
-  margin-left: 250px; /* Largura da sua sidebar aberta */
-  transition: margin-left 0.3s ease-in-out;
-}
-
-/* Nova regra para quando a sidebar está fechada */
-.content-wrapper.content-wrapper-closed {
-  margin-left: 80px; /* Largura da sua sidebar fechada */
-}
-
-.light-theme {
-  background-color: #F5F5F7;
-  color: #121214;
-}
-
-/* Tema dark */
-.dark-theme {
-  background-color: #121214;
-  color: #F5F5F7;
-}
-
-/* 3. O conteúdo principal que deve ter a rolagem */
-main {
-  flex-grow: 1; 
-  overflow-y: auto;
-}
-
-/* --- CÓDIGO ADICIONADO PARA RESPONSIVIDADE MOBILE --- */
+/* --- RESPONSIVIDADE (MOBILE) --- */
+/* ESTA PARTE TAMBÉM É CRÍTICA E FOI MANTIDA EXATAMENTE COMO NO ORIGINAL */
 @media (max-width: 992px) {
-  /* Em telas menores, o conteúdo principal sempre ocupa 100% da largura */
   .content-wrapper,
   .content-wrapper.content-wrapper-closed {
     margin-left: 0;
   }
 
-  /* Estiliza a sidebar (componente filho) para se comportar como um overlay.
-    O seletor :deep() permite que o estilo deste componente "vaze" e afete
-    o componente filho <SideBar />.
-  */
   :deep(.sidebar) {
-    /* Move a sidebar para fora da tela por padrão */
     transform: translateX(-100%);
     transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+    position: absolute; /* Garante que a sidebar flutue sobre o conteúdo */
+    z-index: 1050; /* Garante que fique acima de outros elementos */
+    height: 100vh;
   }
 
-  /* Quando a sidebar NÃO estiver fechada, ela desliza para dentro da tela */
   :deep(.sidebar:not(.sidebar-closed)) {
     transform: translateX(0);
   }

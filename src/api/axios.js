@@ -18,7 +18,7 @@ axiosService.interceptors.request.use(
   (config) => {
     const token = CookiesService.getToken();
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },
@@ -63,7 +63,7 @@ export default {
     return axiosService.get(`/users/${id}`);
   },
 
-    /**
+  /**
    * Atualiza o perfil do usuário.
    * @param {string} id - O ID do usuário a ser atualizado.
    * @param {object} userData - { name, telephone }
@@ -114,9 +114,16 @@ export default {
   deleteSimulation(id) {
     return axiosService.delete(`/simulations/${id}`);
   },
-  
-  // --- Outros ---
-  
+
+  /**
+   * Busca a configuração de parâmetros de uma simulação.
+   * (Chama o backend, que por sua vez chama a API da Unity).
+   * @param {string|number} id - O ID da simulação.
+   */
+  getSimulationConfig(id) {
+    return axiosService.get(`/simulations/${id}/configs`);
+  },
+
   /**
    * Envia um e-mail de suporte.
    * @param {object} supportData - { name, email, message }

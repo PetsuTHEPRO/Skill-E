@@ -3,7 +3,6 @@ import HomeView from "../views/HomeView.vue";
 import store from "../store/index.js";
 import NotFound from "../views/NotFound.vue";
 import axiosService from "@/api/axios";
-import SimulationController from '@/views/SimulationManagerView.vue';
 
 const routes = [
   // --- Rotas Públicas ---
@@ -21,11 +20,6 @@ const routes = [
     path: "/register",
     name: "register",
     component: () => import("../views/Autenticacao/RegisterView.vue"),
-  },
-  {
-    path: "/simulation/manager/", // Rota para o seu controlador de simulação existente
-    name: "simulation-manager",
-    component: SimulationController,
   },
 
   // --- Rotas Protegidas (Painel do Engenheiro) ---
@@ -127,6 +121,5 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 });
-
 
 export default router;

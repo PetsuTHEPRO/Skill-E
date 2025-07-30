@@ -1,3 +1,25 @@
+<script setup>
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+
+const isItemActive = (item) => {
+  // Regra específica para Simulações
+  if (item.rota === 'listSimulations') { // Supondo que 'listSimulations' seja o nome da rota
+    return route.path.startsWith('/simulations');
+  }
+
+  // Você pode adicionar outras regras aqui
+  // if (item.rota === 'settings') {
+  //   return route.path.startsWith('/settings');
+  // }
+  
+  // Para os demais itens, usa a correspondência exata
+  return route.name === item.rota;
+};
+</script>
+
 <template>
   <nav :class="['sidebar d-flex flex-column', { 'sidebar-closed': !isOpen }]">
     <div class="sidebar-header d-flex w-100 align-items-center p-3">
@@ -9,7 +31,7 @@
 
     <ul class="nav flex-column p-2 flex-grow-1">
       <li class="nav-item" v-for="item in menuItems" :key="item.text">
-        <router-link :to="{ name: item.rota }" active-class="active-link" class="nav-link d-flex align-items-center">
+        <router-link :to="{ name: item.rota }" active-class="active-link" class="nav-link d-flex align-items-center" :class="{ 'active-link': isItemActive(item) }">
           <i :class="item.icon" class="nav-icon"></i>
           <span v-show="isOpen" class="ms-3">{{ item.text }}</span>
         </router-link>
@@ -36,9 +58,8 @@ export default {
       // Itens de menu podem ser dinâmicos com base na role
       menuItems: [
         { text: 'Dashboard', icon: 'bi bi-grid-1x2-fill', rota: 'dashboard' },
-        { text: 'Minhas Simulações', icon: 'bi bi-easel2-fill', rota: 'listSimulations' },
+        { text: 'Simulações', icon: 'bi bi-easel2-fill', rota: 'listSimulations' },
         { text: 'Perfil', icon: 'bi bi-person-fill', rota: 'profile' },
-        { text: 'Relatórios', icon: 'bi bi-graph-up', rota: 'simulation-manager' },
         { text: 'Suporte', icon: 'bi bi-question-circle-fill', rota: 'support' },
       ],
     };
@@ -134,4 +155,5 @@ export default {
   border: none;
   text-align: left;
 }
+
 </style>

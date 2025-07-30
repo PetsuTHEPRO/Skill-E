@@ -35,6 +35,7 @@ const handleSubmit = async () => {
     router.push({ name: "listSimulations" });
   } catch (err) {
     console.error("Falha ao cadastrar simulação:", err);
+    notificationService.error(err.response?.data || err.message);
     error.value =
       err.response?.data?.message ||
       err.message ||
@@ -47,7 +48,7 @@ const handleSubmit = async () => {
 
 <template>
   <div class="container-fluid d-flex dashboard-view p-0" :class="theme">
-    <SideBar />
+    <SideBar class="d-none d-lg-block"/>
     <div
       class="container-fluid content-wrapper p-0"
       :class="{ 'content-wrapper-closed': !isSidebarOpen }"
@@ -168,10 +169,6 @@ const handleSubmit = async () => {
               </div>
             </fieldset>
 
-            <div v-if="error" class="error-feedback">
-              <p><strong>Falha ao cadastrar:</strong> {{ error }}</p>
-            </div>
-
             <div class="form-actions">
               <button
                 type="submit"
@@ -201,6 +198,7 @@ const handleSubmit = async () => {
 // O script para o tema e sidebar continua o mesmo
 import storage from "@/service/storage";
 import { mapState } from "vuex";
+import notificationService from "@/service/notificationService";
 
 export default {
   components: { MenuBar, SideBar },

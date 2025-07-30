@@ -5,8 +5,8 @@ import SideBar from "@/components/SideBar.vue";
 </script>
 
 <template>
-  <div class="container-fluid d-flex p-0">
-    <SideBar />
+  <div class="container-fluid d-flex p-0 engineer-profile-view">
+    <SideBar class="d-none d-lg-block"/>
     <div
       class="container-fluid content-wrapper p-0"
       :class="{ 'content-wrapper-closed': !isSidebarOpen }"
@@ -49,41 +49,11 @@ body {
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap");
 
-/* --- NOVO ESTILO DA PÁGINA --- */
-/* --- ANIMAÇÃO DO GRADIENTE (Permanece a mesma) --- */
-@keyframes gradient-animation {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-
 /* --- NOVO ESTILO DA PÁGINA COM PALETA DE CINZA CLARO --- */
 .engineer-profile-view {
   height: 100vh;
   overflow: hidden;
   color: #121214; /* Cor do texto padrão para o conteúdo dentro dos cards */
-
-  /* A técnica de animação é a mesma, com o fundo maior que a tela */
-  background-size: 400% 400%;
-  
-  /* --- A NOVA PALETA DE CORES EM TONS DE CINZA --- */
-  background-image: linear-gradient(
-    -45deg, 
-    #FFFFFF,         /* Branco puro */
-    #F5F5F7,         /* A sua cor base de cinza */
-    #E8E8ED,         /* Um tom de cinza um pouco mais escuro para dar contraste */
-    #F5F5F7          /* Volta para a cor base para suavizar a transição */
-  );
-  
-  /* Aplica a animação com uma duração longa para um efeito calmo */
-  animation: gradient-animation 40s ease infinite;
 }
 
 .content-wrapper {
@@ -103,7 +73,7 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   padding: 2rem;
-  background-color: white;
+  background-color: #F8F9FA;
 }
 
 /* As classes .light-theme e .dark-theme foram removidas pois não são mais necessárias */

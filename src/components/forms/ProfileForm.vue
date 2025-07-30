@@ -171,7 +171,6 @@ export default {
   margin: 2rem auto;
   border-radius: 12px;
   overflow: hidden;
-  /* Estilos do tema light unificados aqui */
   background-color: #FFFFFF;
   color: #1A1D24;
   box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
