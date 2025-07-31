@@ -1,7 +1,7 @@
 import axios from "axios";
 import CookiesService from "@/service/CookiesService.js";
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = 'https://skille-backed-production.up.railway.app';
 
 const axiosService = axios.create({
   baseURL: apiUrl,
